@@ -1,0 +1,114 @@
+
+An \emph{Attribute Grammar} is a context-free grammar with inherited
+and synthesized attributes assigned to every non-terminal
+and a graph that represents dependencies between those attributes
+at the production level.
+
+\begin{definition}{Attribute Grammar}
+
+An Attribute Grammar (AG) is a triple $\langle G,A,D\rangle$, where:
+\begin{itemize}
+ \item Context-free grammar $G = \langle N,T,P,S\rangle$ contains a set of
+    non-terminals $N$, a set of terminals $T$, a set of production
+    rules $P$ and a start symbol $S$. Every $p\in P$ is of the form
+    $X_{p,0}\rightarrow X_{p,1}\ldots X_{p,\mid p\mid}$, with $lhs(p) = X_{p,0}$
+    and $rhs(p) = X_{p,1},\ldots ,X_{p,\mid p\mid}$, where each $X_{p,i}\in
+    \{lhs(p)\}\cup rhs(p)$ is called a field of $p$ and an occurrence of
+    some non-terminal $X\in N$, i.e. $\exis{X\in N}{X_{p,i} = X}$.
+ \item A set $A(X) = A_{inh}(X) \cup A_{syn}(X)$ is defined for all $X\in N$.
+    From the attributes we infer the attribute occurrences gathered in 
+    the set $A_P(p) = A_{in}(p) \cup A_{out}(p)$, where $A_{in}(p)$ 
+    and $A_{out}(p)$ are the input and output occurrences of $p$ respectively.
+    \begin{equation*}
+     \begin{aligned}
+        A_{in}(p) = &\set{X_{p,0} \cdot a}{X \cdot a \in A_{inh}(lhs(p))}\\
+        \cup &\set{X_{p,i} \cdot a}{X_{p,i} \in rhs(p) 
+                                \sand X = X_{p,i}
+                                \sand X \cdot a \in A_{syn}(X)) }
+     \end{aligned}
+    \end{equation*}
+    \begin{equation*}
+     \begin{aligned}
+        A_{out}(p) = &\set{X_{p,0} \cdot a}{X \cdot a \in A_{syn}(lhs(p))}\\
+        \cup &\set{X_{p,i} \cdot a}{X_{p,i} \in rhs(p) 
+                                \sand X = X_{p,i}
+                                \sand X \cdot a \in A_{inh}(X)) }
+     \end{aligned}
+    \end{equation*}
+ \item A dependency graph $D(p)$ indicates that attribute $a$ is used in
+    the semantic function definition of attribute $b$ when 
+    $(a\rightarrow b)\in D(p)$.
+\end{itemize}
+\end{definition}
+
+The definition of AGs given above is not a complete definition in the sense that
+it does not contain enough information to generate executable code from it -
+the actual semantic function definitions are missing, for example.
+However it contains all the information we need to define the problem of 
+finding a static evaluation order for all Linear Ordered Attribute Grammars and
+deciding whether an AG is an LOAG.
+
+\begin{definition}{Linear Ordered Attribute Grammars}
+
+A Linear Ordered Attribute Grammar (LOAG) is an AG that satisfies
+the following properties:
+\begin{itemize}
+ \item For all $X \in N$ there exists a graph $R_X(x)$ that satisfies:
+    \begin{itemize}
+        \item \emph{Totality}: There must be an edge between every inherited
+                and synthesized pair:
+                \begin{equation*}
+                 \begin{aligned}
+                    \forall &(i \in A_{inh}(X), s\in A_{syn}(X))\\
+                        &(i\rightarrow s) \in R_X(X) \lor (s\rightarrow i)
+                    \in R_X(X)
+                 \end{aligned}
+                \end{equation*}
+    \end{itemize}
+ \item For all $p\in P$ there exists a graph $R_P(p)$ that satisfies:
+    \begin{itemize}
+        \item \emph{Feasibility}: The graph must include the 
+            dependencies, i.e. 
+            \begin{equation*}
+                D(p) \subseteq R_P(p).
+            \end{equation*}
+        \item \emph{Consistency}: The graph must be consistent with $R_X$, i.e.
+            \begin{equation*}
+             \begin{aligned}
+                \forall &(X\in \{lhs(p)\}\cup rhs(p), X = X_{p,i})\\
+                    (&(X\cdot a\rightarrow X\cdot b)\in R_X(X) 
+                    \Rightarrow (X_{p,i}\cdot a\rightarrow X_{p,i}\cdot b))
+             \end{aligned}
+            \end{equation*}
+        \item \emph{Orderability}: The graph $R_P(p)$ must be acyclic.
+    \end{itemize}
+\end{itemize}
+\end{definition}
+
+Graph $R_P$ serves the same purpose as graph $ED_P$ from Kastens and from $R_X(X)$
+we can infer Kastens' interfaces\cite{kastens80}.
+
+\subsection{Satisfiability}
+
+Using the above definition for LOAGs we can define a Boolean Satisfiability 
+Problem that determines whether an arbitrary AG is an LOAG.
+
+Firstly, be defining a variable $x_{i,s}$ for every element of the Cartesian
+product $i \times s$, with $i \in A_{inh}(X)$ and $s \in A_{syn}(X)$ for all
+$X\in N$. Secondly, by saying $x_{a,b} =\top$ when $a = (X_{p,i}\cdot a')$,
+$b = (X_{p,i}\cdot b')$ and $(X_{p,i}\cdot a'\rightarrow X_{p,i}\cdot b')\in D_P(p)$
+(\emph{feasibility}).
+Thirdly, by assigning every variable $\top$ or $\bot$ (\emph{totality}) under 
+the constraints that the graph $R_P$ the assignments imply is cycle free
+(\emph{orderability}).
+Note that \emph{consistency} is guaranteed by making sure that a variable
+represents the edge between attributes (non-terminal level) as well as the edges 
+between all the occurrences of that edge (production level).
+
+%\begin{definition}{Boolean linear orderedness}
+%\label{def:booleanlorderedness}
+%Define a variable $x_{i,s}$ for every pair in $A_inh(X) \times A_syn(X)$ for all $X\in N$.
+%An AG is a member of the class LOAG if we there is an assignment $x_{i,s} = \top$ 
+%or $x_{i,s} = \bottom$ for every $x_{i,s}$, such that 
+%\end{definition}
+
