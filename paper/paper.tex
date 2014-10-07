@@ -16,8 +16,11 @@
 \maketitle
 
 \begin{abstract}
-A nice abstract here.
-\keywords{Attribute Grammars, SAT-Solving}
+Attribute grammars are a formalism for describing tree computations (catamorphisms), and are therefore suitable for implementing the semantics of programming languages. A well-known subclass is the class of linear ordered attribute grammars, for which a linear evaluation order can be found statically. The problem of finding such an order is however known to to be NP-hard.
+
+In this paper we encode linear ordered attribute grammar scheduling as a SAT-problem. We encode cycle-freeness of the dependency graphs efficiently by making the graphs chordal, which is a new approach for encoding such graph property in SAT. We show that using Minisat as an external SAT-solver the scheduling algorithm runs much faster than existing scheduling algorithms on real-world examples. Furthermore, this approach allows fine-grained control over the resulting schedule, thereby enabling new attribute grammar optimizations.
+
+\keywords{Attribute Grammars, static analysis, SAT-solving}
 \end{abstract}
 
 \section{Introduction}
