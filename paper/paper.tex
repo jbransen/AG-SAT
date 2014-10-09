@@ -2,21 +2,22 @@
 
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage[T1]{fontenc}
 \usepackage{tikz}
 \input{./formats.tex}
 
-\author{L. Thomas van Binsbergen\inst{1} \and Jeroen Bransen\inst{2} \and Koen Claessen\inst{3}}
-\institute{todo, \email{todo@todo.co.uk}
-\and Utrecht University, Utrecht, The Netherlands, \email{J.Bransen@uu.nl}
-\and todo, \email{koen@chalmers.se}}
-\title{SAT-solving Linear Ordered Attribute Grammars}
+\title{Linear Ordered Attribute Grammar scheduling using SAT-solving}
+\author{Jeroen Bransen\inst{1}  \and L. Thomas van Binsbergen\inst{2,1} \and Koen Claessen\inst{3} \and Atze Dijkstra\inst{1}}
+\institute{Utrecht University, Utrecht, The Netherlands, \email{\{J.Bransen,atze\}@uu.nl}
+\and Royal Holloway, University of London, London, UK, \email{Thomas.VanBinsbergen.2014@live.rhul.ac.uk}
+\and Chalmers University of Technology, Gothenburg, Sweden, \email{koen@chalmers.se}}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-Attribute grammars are a formalism for describing tree computations (catamorphisms), and are therefore suitable for implementing the semantics of programming languages. A well-known subclass is the class of linear ordered attribute grammars, for which a linear evaluation order can be found statically. The problem of finding such an order is however known to to be NP-hard.
+Attribute grammars are a formalism for describing tree computations (catamorphisms), and are therefore suitable for implementing the semantics of programming languages. A well-known subclass is the class of linear ordered attribute grammars, for which a linear evaluation order can be found statically. The problem of finding such an order is however known to be NP-hard.
 
 In this paper we encode linear ordered attribute grammar scheduling as a SAT-problem. We encode cycle-freeness of the dependency graphs efficiently by making the graphs chordal, which is a new approach for encoding such graph property in SAT. We show that using Minisat as an external SAT-solver the scheduling algorithm runs much faster than existing scheduling algorithms on real-world examples. Furthermore, this approach allows fine-grained control over the resulting schedule, thereby enabling new attribute grammar optimizations.
 
