@@ -1,0 +1,53 @@
+\renewcommand{\agcoordpary}{27}
+\renewcommand{\agcoordchldy}{22}
+
+\agparent{0}{P6}{lhs}{1.499999999999998}{lhs:X} %
+\agparattr{0}{a}{a}{-1.4999999999999986}{[FunId]}{inputstyle} %
+\agparattr{0}{b}{b}{4.499999999999998}{[TyId]}{outputstyle} %
+\agsibline{0}{a}{lhs} %
+\agsibline{0}{lhs}{b} %
+\agdeplinedowndown{0}{a}{b}{horunknown}{1} %
+
+\agparent{0}{P5}{lhs}{15.499999999999998}{lhs:R} %
+\agchldnonterm{0}{y}{y}{15.5}{Y} %
+\agchldattr{0}{c}{c}{12.5}{[TyId]}{outputstyle} %
+\agchldattr{0}{d}{d}{18.5}{Bool}{inputstyle} %
+\agsibline{0}{c}{y} %
+\agsibline{0}{y}{d} %
+\agdeplineupup{0}{d}{c}{horunknown}{0.8}
+
+%\agidplinedown{0}{a}{b}{horunknown}{1} %
+
+%\agidplineup{0}{c}{d}{horunknown}{1}
+
+\renewcommand{\agcoordpary}{20}
+\renewcommand{\agcoordchldy}{14}
+
+\agparent{0}{P4}{lhs}{6.499999999999998}{lhs:Y} %
+\agparattr{0}{c}{c}{3.4999999999999986}{[FunId]}{inputstyle} %
+\agparattr{0}{d}{d}{9.499999999999998}{[TyId]}{outputstyle} %
+\agsibline{0}{c}{lhs} %
+\agsibline{0}{lhs}{d} %
+\agchldnonterm{0}{x1}{x1}{1.5}{X} %
+\agchldattr{0}{a1}{a1}{-1}{[TyId]}{outputstyle} %
+\agchldattr{0}{b1}{b1}{4}{Bool}{inputstyle} %
+\agsibline{0}{a1}{x1} %
+\agsibline{0}{x1}{b1} %
+\agchldnonterm{0}{x2}{x2}{11.5}{X} %
+\agchldattr{0}{a2}{a2}{9}{[TyId]}{outputstyle} %
+\agchldattr{0}{b2}{b2}{14}{Bool}{inputstyle} %
+\agsibline{0}{a2}{x2} %
+\agsibline{0}{x2}{b2} %
+
+%\agidplinedown{0}{a}{b}{horunknown}{1} %
+%\agidplinedown{0}{c}{d}{horunknown}{1} %
+%\agidplineup{0}{e}{f}{horunknown}{1}
+
+\agdeplinedownup{0}{c}{a1}{horunknown} %
+\agdeplineupup{0}{b1}{a2}{horunknown}{.8} %
+\agdeplineupdown{0}{b2}{d}{horunknown} %
+
+\renewcommand{\agcoordpary}{20}
+\renewcommand{\agcoordchldy}{14}
+
+

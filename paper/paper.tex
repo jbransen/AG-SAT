@@ -4,13 +4,21 @@
 \usepackage{amssymb}
 \usepackage[T1]{fontenc}
 \usepackage{tikz}
+\usetikzlibrary{arrows, automata}
 \input{./formats.tex}
 
 \title{Linear Ordered Attribute Grammar scheduling using SAT-solving}
 \author{Jeroen Bransen\inst{1}  \and L. Thomas van Binsbergen\inst{2,1} \and Koen Claessen\inst{3} \and Atze Dijkstra\inst{1}}
 \institute{Utrecht University, Utrecht, The Netherlands, \email{\{J.Bransen,atze\}@uu.nl}
-\and Royal Holloway, University of London, London, UK, \email{Thomas.VanBinsbergen.2014@live.rhul.ac.uk}
+\and Royal Holloway, University of London, Egham, UK, \email{Thomas.VanBinsbergen.2014@live.rhul.ac.uk}
 \and Chalmers University of Technology, Gothenburg, Sweden, \email{koen@chalmers.se}}
+
+\newif\iffinal\finalfalse
+\newcommand{\REM}[3]{\iffinal\else\textcolor{#2}{[#1: #3]}\fi}
+\newcommand{\Atze}[1]{\REM{Atze}{red}{#1}}
+\newcommand{\Koen}[1]{\REM{Koen}{red}{#1}}
+\newcommand{\Jeroen}[1]{\REM{Jeroen}{red}{#1}}
+\newcommand{\Thomas}[1]{\REM{Thomas}{red}{#1}}
 
 \begin{document}
 
@@ -26,11 +34,14 @@ statically, but this problem is known to be NP-hard.
 In this paper, we show how to encode linear ordered attribute grammar
 scheduling as a SAT-problem. Cycle-freeness of the dependency graphs
 is expressed by making the graphs chordal, which is a new approach for
-encoding such graph property in SAT.
+encoding such graph properties in SAT.
 
 There are two main advantages to using a SAT-solver for scheduling:
 (1) the scheduling algorithm runs much faster than existing scheduling
-algorithms on real-world examples, and (2) by adding extra constraints
+algorithms on real-world examples\Thomas{Waarmee vergelijken we? 
+Kastens algoritme is niet voor LOAGs, het voordeel dat onze aanpak geen 
+augmenting dependencies nodig heeft zou dan in de vergelijking genoemd moeten 
+worden}, and (2) by adding extra constraints
 we obtain fine-grained control over the resulting schedule, thereby
 enabling new scheduling optimizations.
 
@@ -40,7 +51,111 @@ enabling new scheduling optimizations.
 
 \section{Introduction}
 
+\section{Attribute Grammar}
+An attribute grammars consists of three parts: a context-free grammar 
+describing abstract syntax, a set of inherited and synthesized attributes
+assigned to every non-terminal of the grammar and a set of semantic function
+definitions. A production rule of a context-free grammar has one non-terminal
+as its left-hand side and any number of terminals and non-terminals as its
+right-hand side. The non-terminals occurring in production rules are considered
+to be non-terminal \emph{occurrences}. A non-terminal occurrence of 
+non-terminal $X$ automatically obtains the attributes of $X$ as attribute 
+occurrences. The semantic function definitions describe how some attribute 
+occurrences of a production rule are calculated in terms of other attribute
+occurrences and terminal symbols of that rule. For our purposes we can safely
+ignore any terminal symbols. Figure \ref{fig:productions} shows
+examples of production rules displayed as diagrams.
+
+\mypic{productions}{Diagrams showing productions, $P1: (lhs:X) \rightarrow 
+\alpha$, $P2: (lhs:Y) \rightarrow \alpha (x:X) \beta$, $P3: (lhs:Z)
+\rightarrow \alpha (y:Y) \beta (x:X) \gamma$, where $\alpha$, $\beta$,
+$\gamma$ are arbitrary terminal symbols.}
+
+All non-terminal occurrences are named, e.g. $(x:X)$ is an occurrence of 
+non-terminal $X$ named $x$. Synthesized attributes are shown to the right
+and inherited attributes are shown to the left of their respective
+non-terminal occurrences. The gray attribute occurrences (inherited in the
+left-hand side and synthesized in the right-hand side) are input occurrences,
+the others are output occurrences. 
+
+The input occurrences of one production are the output occurrences of another.
+Production rules can be `pasted' together to form a tree\cite{knuth68}. 
+This task is performed by a parser forming a derivation 
+tree\Thomas{Ik stop hier maar even met typen om 
+niet te veel uit te wijden, maar eigenlijk zou ik hier nog willen vertellen
+dat: 1) Input occurrences van buitenaf worden aangeleverd, 2) dat om dit
+te kunnen doen er wel definities voor output occurrences nodig zijn, 
+3) dat de pijlen in het figuur (omgekeerde) dependencies weergeven.}.
+
+
 \section{Linear Ordered Attribute Grammars}
+A linear ordered attribute grammar is an attribute grammar for which we can 
+find a evaluation order statically\Thomas{Hier zouden we misschien een 
+voorbeeld van een parse tree willen laten zien met een interessante 
+evaluation order, helaas zijn dat soort plaatjes veel te groot}. 
+That is, based on only the information of
+non-terminals and productions from the grammar, we can ensure that an 
+evaluation order exists for any valid sentence of the grammar.
+We show a static evaluation order exists by constructing evaluation orders 
+for all production rules such that they satisfy certain properties.
+Most importantly: when pasting together production rules to form a 
+derivation tree, the evaluation orders for those trees can not contradict 
+each other. Figure \ref{fig:contradiction} shows what can go wrong.
+
+\mypic{contradiction}{The evaluation orders depicted by the arrows
+of productions $P4$, $P5$ and $P6$ contradict each other: they can
+not be combined without forming a cycle.}
+
+Any non-terminal occurrence of $X$ can be replaced by any
+of the productions of $X$. Therefore, when constructing an evaluation
+order for a production in which $X$ occurs in the right-hand side,
+all the evaluation orders constructed for productions in which 
+$X$ occurs in the left-hand side need to be taken account.
+Changing the evaluation order of one production rule is likely to demand 
+a change in the evaluation order of some other production. This is 
+what makes LOAG scheduling NP-hard.
+
+In a production graph we can represent the evaluation order of other graphs
+using induced dependencies (graph $ID_P$ from Kastens) by adding an 
+arrow $a\rightarrow b$ to a non-terminal $X$ if $X$ occurs in some other
+production in which there is a path between its $a$ and $b$.
+Figure \ref{fig:idp} shows the induced dependency graph of production
+$P4$.
+
+\mypic{idp}{The gray edges are induced dependency, showing that they
+evaluation orders of Figure \ref{fig:contradiction} are not compatible.}
+
+The induced dependencies will be the same for every occurrence of every
+non-terminal and are gathered in induced dependency graphs for 
+non-terminals (Kastens $ID_S$).
+
+We can now look at the problem from two directions: 1) we change the
+evaluation order of a production and update graph $ID_S$ which might
+then affect other production rules and update until all evaluation
+orders are compatible\Thomas{AOAG} or 2) we make the decision at non-terminal 
+level and decide an order for evaluating the attributes of a non-terminal 
+such that an order at production level is still 
+possible\Thomas{LOAG, De intuitie achter dit idee zijn de visit-sequences
+en intra-visit dependencies, maar die willen we niet noemen}.
+
+\section{Chordal Graphs}
+The chords of a chordal graph can be seen as representing the assignment
+to the variables `behind' that chord. If there is a chord $a\leftrightarrow b$
+then an assignment $a\leftrightarrow^\rightarrow b$ implies that there is 
+no path $b\longrightarrow a$ assuming cycle-freeness. This intuition allows
+us to see why all assignments that lead to no cycles of length 3 lead to 
+no cycles at all in a chordal graph: every cycle of length $> 3$ is 
+split by a chord, so one side of the cycles assignments is represented by
+the chord in the other.
+
+\mypic{simplechord}{There can not exists a cycle w-n-e-s without either
+a cycle n-s-w or n-e-s.}
+
+\Thomas{In mijn scriptie gebruik ik problem graphs en assignment graphs
+om de stap van undirected naar directed graphs te maken. Later kwam ik
+echter het begrip `orientation' tegen, met hetzelfde doel.}
+
+\section{Definitions}
 \input{./loags.tex}
 
 \bibliographystyle{splncs}

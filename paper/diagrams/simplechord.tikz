@@ -1,0 +1,12 @@
+
+
+\node at (2,3.5)   [style=synnode] (n)    {n};
+\node at (2,0.5)   [style=synnode] (s)   {s};
+\node at (0,2)   [style=synnode] (w)   {w};
+\node at (4,2)   [style=synnode] (e)   {e};
+
+\draw[style=chord] (w) -- node[anchor=south]  {$\nearrow$}  (n) {};
+\draw[style=chord] (s) -- node[anchor=east]  {$\nwarrow$}  (w) {};
+\draw[style=chord] (e) -- node[anchor=north] {$\swarrow$}  (s) {};
+\draw[style=chord] (n) -- node[anchor=south] {$\searrow$}  (e) {};
+\draw[style=chord] (n) -- node[anchor=west]  {$\uparrow$} (s);
