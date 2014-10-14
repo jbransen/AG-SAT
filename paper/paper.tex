@@ -102,7 +102,20 @@ The figure shows what is called the \emph{production dependency graphs}. For a p
 Although we talk about dependency graphs in the context of scheduling, we actually draw the edges in the other direction. The edges in the picture denote data flow, which from an attribute grammar perspective is much more intuitive. For example, in the \emph{Bin} production the attribute a1 of the child \emph{r} is computed from a1 from the parent and a3 from the child \emph{l}. The edges are thus always directed from an input attribute to an output attribute, and the true dependency graph can be obtained by reversing all edges.
 
 \section{Linear Ordered Attribute Grammars} \label{sect:loag}
-\Jeroen{todo: vertel wat subklasse van LOAG inhoudt; nonterminal dependency graphs, en de interactie in scheduling}
+Given an attribute grammar definition the attribute grammar compiler should produce a runtime evaluator that takes an abstract syntax tree as input and computes all attribute values. There are two approaches for doing the scheduling: at runtime (dynamic) or at compile time (static).
+
+For dynamic scheduling one could rely on existing machinery for lazy evaluation, for example in Haskell, which is the approach taken by \cite{saraiva99}. There the attribute grammar definitions are translated to lazy Haskell functions in a straightforward way by producing functions that take the inherited attributes as argument and return the synthesized attributes. Whenever an inherited attribute (indirectly) depends on the value of a synthesized attribute, this means the function has a cyclic definition, which is no problem for languages with lazy semantics, and can actually result in effient code \cite{Bird:1984}.
+
+There are two problems with the dynamic scheduling. First of all whenever the attribute grammar contains a true cyclic attribute definition, the evaluator enters an infinite loop at runtime. However, these cycles could have been detected at compile time! Furthermore, the code needs lazy functions while with the static scheduling strict evaluators can be generated, leading to more effient code in practice.
+
+For static scheduling efficient evaluators can be generated, but the problem is that static scheduling is hard. In \cite{kastens80} a polynomial time algorithm is given for static scheduling of the class of ordered attribute grammars, but unfortunately we often encounter attribute grammars outside of that class. All our attribute grammars do however fall in the class of linear ordered attribute grammars, which is the largest class of attribute grammars for which a static schedule can be found. Although the scheduling is NP-complete, we have implemented a backtracking algorithm in earlier work \cite{Binsbergen:2015} that is feasible in practice. However, in this paper we show that we can do better.
+
+Conceptually, static scheduling of linear ordered attribute grammars is not very complex. For each nonterminal a total order should be found on its attributes, such that all production dependency graphs all cycle free. However, because a nonterminal can have multiple productions and a production can have children of different types, choices made on the order of attributes of one nonterminal can influence the order of attributes in another nonterminal.
+
+\mypic{labval_bin_flow_induced}{Production dependency graph for Bin for the order a2 $\rightarrow$ a4 $\rightarrow$ a1 $\rightarrow$ a3}
+
+In \figref{fig:labval_bin_flow_induced} we show the production dependency graph of the nonterminal \emph{Bin} for a complete order on the attributes. In this case there is only a single nonterminal so both the parent and the child nodes have the same order. Because this dependency graph is still cycle free after adding the edges for the complete order and the same holds for the \emph{Leaf} production, the order a2 $\rightarrow$ a4 $\rightarrow$ a1 $\rightarrow$ a3 is a valid schedule for the nonterminal \emph{Tree}.
+
 
 \section{Translation to SAT} \label{sect:translation}
 \Jeroen{todo: vertaling, chordal graphs uitleggen}
