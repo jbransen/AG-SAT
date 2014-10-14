@@ -77,13 +77,29 @@ This paper therefore makes the following main contributions:
 \end{itemize}
 Furthermore, we have implement the described techniques in the UUAGC\footnote{\url{http://www.cs.uu.nl/wiki/HUT/AttributeGrammarSystem}} \cite{combinator-languages} and show that the technique works well in practice for the UHC.
 
-The outline of the paper is as follows. We start in \sectref{sect:loag} by explaining linear ordered attribute grammars and the difficulties in scheduling in more detail. We then describe the translation to SAT in \sectref{sect:translation} and show the effectiveness of our approach in \sectref{sect:results}. In \sectref{sect:optimisations} we describe the two attribute grammar optimisations and finally in \sectref{sect:conclusion} we discuss some problems and conclude.
+The outline of the paper is as follows. We start in \sectref{sect:ag} and \sectref{sect:loag} by explaining linear ordered attribute grammars and the difficulties in scheduling in more detail. We then describe the translation to SAT in \sectref{sect:translation} and show the effectiveness of our approach in \sectref{sect:results}. In \sectref{sect:optimisations} we describe the two attribute grammar optimisations and finally in \sectref{sect:conclusion} we discuss some problems and conclude.
 
 \Jeroen{todo in intro: cite Minisat?, cite Binsbergen:2015 (PEPM)}
 
 
+\section{Attribute Grammars} \label{sect:ag}
+Formally an attribute grammar consists of three parts: a context-free grammar, a set of attribute definitions and a set of semantic functions. Instead of a context-free grammar describing the concrete syntax of the language, we feel that it is more intuitive to visualise the grammar as describing the abstract syntax tree of the language. We therefore say that an attribute grammar consists of a set of algebraic data types describing the abstract syntax, a set of attribute definitions and a set of semantic functions. The attribute definitions and semantic functions describe how values should be computed over the abstract syntax tree.
+
+In the rest of this paper we do stick to the usual attribute grammar terminology, so with a \emph{nonterminal} we mean a type, and a \emph{production} is a constructor of that type. Furthermore, the name \emph{lhs} (short for left-hand side) refers to the constructor itself, while the children of a production have separate names. As this paper is about scheduling and data dependencies, we do not explain the syntax of the semantic functions here, but it is important to remark that these functions define how the value of a certain attribute can be computed from other attributes.
+
+There are two types of attributes: \emph{inherited} attributes with values that are passed from a parent to its children, and \emph{synthesized} attributes with values that are passed from the children to their parents. In the pictures we draw inherited attributes on the left side of a node, and the synthesized attributes on its right side.
+
+\mydoublepic{labval_bin_flow_full}{0.55}{labval_leaf_flow_full}{0.3}{
+    Example attribute grammar for binary trees with two inherited and two synthesized attributes}
+
+In \figref{fig:labval_bin_flow_full} we show an example attribute grammar with one nonterminal \emph{Tree} which has two productions: \emph{Bin} and \emph{Leaf}. The \emph{Bin} production has two children named \emph{l} and \emph{r}, both of the type \emph{Tree}, and \emph{Leaf} has no children. The \emph{Tree} nonterminal has four attributes: two inherited attributes a1 and a2 and two synthesized attributes a3 and a4.
+
+The figure shows what is called the \emph{production dependency graphs}. For a production two different types of attributes can be distinguished: \emph{input} attributes, which are attributes for which the value is provided, and \emph{output} attributes, which are values that need to be defined. The input attributes of a production, colored gray in the picture, are the inherited attributes of the production itself, because their values are provided by the parent node, and the synthesized attributes of all its children. The output attributes, colored white in the picture, are the synthesized attributes of the parent and the inherited attributes of the child.
+
+Although we talk about dependency graphs in the context of scheduling, we actually draw the edges in the other direction. The edges in the picture denote data flow, which from an attribute grammar perspective is much more intuitive. For example, in the \emph{Bin} production the attribute a1 of the child \emph{r} is computed from a1 from the parent and a3 from the child \emph{l}. The edges are thus always directed from an input attribute to an output attribute, and the true dependency graph can be obtained by reversing all edges.
+
 \section{Linear Ordered Attribute Grammars} \label{sect:loag}
-\Jeroen{todo: Betere introduction LOAGs, plaatjes om scheduling toe te lichten, dependency graphs utleggen}
+\Jeroen{todo: vertel wat subklasse van LOAG inhoudt; nonterminal dependency graphs, en de interactie in scheduling}
 
 \section{Translation to SAT} \label{sect:translation}
 \Jeroen{todo: vertaling, chordal graphs uitleggen}
@@ -97,6 +113,12 @@ The outline of the paper is as follows. We start in \sectref{sect:loag} by expla
 \section{Conclusion and discussion} \label{sect:conclusion}
 \Jeroen{todo: het werkt, misschien is andere representatie beter, en het is onvoorspelbaarder dus misschien duren sommige ags ineens heel lang om te schedulen}
 
+
+
+\bibliographystyle{splncs}
+\bibliography{biblio}
+
+\end{document}
 
 % -----------------------------------
 
