@@ -9,4 +9,4 @@
 \draw[style=chord] (s) -- node[anchor=east]  {$\nwarrow$}  (w) {};
 \draw[style=chord] (e) -- node[anchor=north] {$\swarrow$}  (s) {};
 \draw[style=chord] (n) -- node[anchor=south] {$\searrow$}  (e) {};
-\draw[style=chord] (n) -- node[anchor=west]  {$\uparrow$} (s);
+\draw[style=chord] (n) -- node[anchor=west]  {$\updownarrow$} (s);

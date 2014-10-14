@@ -112,13 +112,42 @@ For static scheduling efficient evaluators can be generated, but the problem is 
 
 Conceptually, static scheduling of linear ordered attribute grammars is not very complex. For each nonterminal a total order should be found on its attributes, such that all production dependency graphs all cycle free. However, because a nonterminal can have multiple productions and a production can have children of different types, choices made on the order of attributes of one nonterminal can influence the order of attributes in another nonterminal.
 
+In order to encode this we also construct a \emph{nonterminal dependency graph}. This graph contains all attributes that are defined for the corresponding nonterminal and the edges in this graph must define a total order on the attributes. Furthermore, the edges in the nonterminal dependency graph should agree with the (indirect) dependencies from the production dependency graphs such that no cycles exist.
+
 \mypic{labval_bin_flow_induced}{Production dependency graph for Bin for the order a2 $\rightarrow$ a4 $\rightarrow$ a1 $\rightarrow$ a3}
 
-In \figref{fig:labval_bin_flow_induced} we show the production dependency graph of the nonterminal \emph{Bin} for a complete order on the attributes. In this case there is only a single nonterminal so both the parent and the child nodes have the same order. Because this dependency graph is still cycle free after adding the edges for the complete order and the same holds for the \emph{Leaf} production, the order a2 $\rightarrow$ a4 $\rightarrow$ a1 $\rightarrow$ a3 is a valid schedule for the nonterminal \emph{Tree}.
+In \figref{fig:labval_bin_flow_induced} we show the production dependency graph of the nonterminal \emph{Bin} with a complete order on the attributes. In this case there is only a single nonterminal so both the parent and the child nodes have the same attribute order, made explicit by extra edges from the nonterminal dependency graph. Because this dependency graph is still cycle free after adding the edges for the complete order and the same holds for the \emph{Leaf} production, the order a2 $\rightarrow$ a4 $\rightarrow$ a1 $\rightarrow$ a3 is a valid schedule for the nonterminal \emph{Tree}.
 
 
 \section{Translation to SAT} \label{sect:translation}
-\Jeroen{todo: vertaling, chordal graphs uitleggen}
+To represent the scheduling problem as a Boolean formula we introduce a variable for each edge, indicating the direction of the edge. The direct dependencies coming from the source code are constants, but for the rest of the edges the SAT solver can decide on the direction. However, the encoding has been chosen in such way that a valid assigment of the variables corresponds to a valid schedule.
+
+Our algorithm has the following steps:
+\begin{enumerate}
+\item Construct a nonterminal dependency graph for each nonterminal
+\item Construct a production dependency graph for each production
+\item Make all graphs chordal
+\item Introduce a SAT variable for each edge in any of the graphs, where edges from a production dependency graph and the corresponding nonterminal dependency graph are shared, so are represented by the same variable
+\item Set the value of all variables corresponding to direct dependencies
+\item Exclude all cycles of length three
+\item Optionally add extra constraints for optimisations
+\end{enumerate}
+The first two steps have been explained in the previous sections. Step 3 is explained below, and step 5 and 6 follow from that. Finally step 7 is explained in \sectref{sect:optimisations}.
+
+\subsection{Chordal graphs}
+A chordal graph is an undirected graph in which each cycle of length $> 3$ contains a \emph{chord}. A chord is an edge between two nodes in the cycle that are not adjacent. The result of this is that each cycle of length $> 3$ is split up into two smaller cycles, so if a chordal graph contains a cycle it must also contain a cycle of size three. Chordal graphs are therefore sometimes also referred to as \emph{triangulated graphs}.
+
+\mypic{simplechord}{There can not exists a cycle w-n-e-s without either
+a cycle n-s-w or n-e-s.}
+
+In our case the graphs are directed, but we can still apply the same trick! In \figref{fig:simplechord} we illustrate how to use chordal graphs to exclude cycles. If there exists a cycle of length four, then it is not possible to choose a direction for the edge between \emph{n} and \emph{s} without introducing a cycle of length three. Hence, if we make our graph chordal by adding edges which may have an arbitrary direction and explicitly exclude all cycles of length three, we ensure that no cycles can exist at all.
+
+\Jeroen{todo: say something about heuristics for making the graph chordal and how many triangles there are}
+
+\subsection{Finding the schedule}
+When the constructed Boolean formula is given to the SAT-solver, the result is either that the formula is not satisfiable, meaning that no schedule has been found, of satisfiable, meaning that there is a schedule. It is not hard to see that the formula is satisfiable if and only if there exists a valid schedule for the given attribute grammar definition, and in this paper we give no formal proof of this claim.
+
+In the case where the formula is satisfiable, we obviously want to find the result. From the SAT solver we can ask for the truth value of each variable in the solution, so when our algorithm keeps the connection between edges and variables we can complete our directed graph and trivially find the complete order for all attributes from that. The constraints guarantee that this graph contains no cycles.
 
 \section{Empirical results} \label{sect:results}
 \Jeroen{todo: getallen over UHC laten zien, het werkt echt}
