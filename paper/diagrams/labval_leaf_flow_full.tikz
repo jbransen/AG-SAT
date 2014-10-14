@@ -1,0 +1,13 @@
+\agbeginprod{0}{Leaf}{lhs}{Tree}{10.2} %
+\agparent{0}{Leaf}{lhs}{5.1}{lhs:Tree} %
+\agparattr{0}{a1}{lhsIlab}{0.5}{Int}{inputstyle} %
+\agparattr{0}{a2}{lhsIvals}{2.3}{[Int]}{inputstyle} %
+\agparattr{0}{a3}{lhsSlab}{7.8999999999999995}{Int}{outputstyle} %
+\agparattr{0}{a4}{lhsSvals}{9.7}{[Int]}{outputstyle} %
+\agsibline{0}{lhsIlab}{lhsIvals} %
+\agsibline{0}{lhsIvals}{lhs} %
+\agsibline{0}{lhs}{lhsSlab} %
+\agsibline{0}{lhsSlab}{lhsSvals} %
+\agdeplinedowndown{0}{lhsIlab}{lhsSlab}{horunknown} %
+\agdeplinedowndown{0}{lhsIvals}{lhsSvals}{horunknown} %
+\agendprod{0}{Leaf}{lhs}{Tree}{10.2} %
