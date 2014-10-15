@@ -232,7 +232,25 @@ In \tabref{tab:algo-comparison} we show the compilation times for the MainAG of 
 As explained in \sectref{sect:chordalconstruct} we need to find an order in which to handle the vertices such that the resulting SAT problem is as small as possible. In \tabref{tab:edgecomp} we show the results of different heuristics for the MainAG of the UHC. In this table we use three different sets: $\mathcal{D}$ is the set of direct dependencies, $\mathcal{C}$ is the set of edges that are added to make the graph chordal and $\mathcal{S}$ is the set of other edges. For each of the sets we take only the edges in the neigbourhood of \emph{v} for comparison.
 
 \section{Optimisations} \label{sect:optimisations}
-\Jeroen{todo: laten zien dat we totaal aantal visits kunnen minimaliseren en dat we sommige attributen vroeg kunnen schedulen, en intuitie geven waarom dit nuttig is (meer hebben we ook nog niet)}
+We have shown that expressing the scheduling problem as a SAT problem and using an existing SAT-solver can improve the running time of the scheduling, but that is not the only advantage. In the SAT problem one can easily add extra constraints to further influence the resulting schedule. In this section we show two of such optimisations that are useful from an attribute grammar perspective.
+
+\subsection{Minimalising visits}
+The result of the static scheduling is a runtime evaluator that computes the values of the attributes for a given abstract syntax tree. The total order for each nonterminal defines in what order attributes should be computed, but in the implementation of the evaluator we make use of a slightly bigger unit of computation: a \emph{visit}.
+
+A visit is an evaluation step in the runtime evaluator that takes the values of a (possibly empty) set of inherited attributes and produces a (non-empty) set of synthesized attributes. In order to compute these values, visits to the child nodes may happen, and at the top of the tree the wrapping code invokes all visits of the top node one by one.
+
+Because invoking a visit at runtime may have a certain overhead, we would like the number of visits to be as small as possible. In other words, in the total order on the attributes we would like to minimise the number of places where a synthesized attribute is followed by an inherited attribute, because that is the location where a new visit needs to be performed.
+
+It is theoretically impossible to minimise the total number of visits performed for the full abstract syntax tree, because at compile-time we do not have a concrete abstract syntax tree at hand and only know about the grammar. We therefore try to minimise the maximum number of visits that any nonterminal takes.
+
+\Jeroen{todo: describe how}
+
+\subsection{Eager attributes}
+Another optimisation is the ability of defining \emph{eager attributes}. Eager attributes are attributes that should be computed as soon as possible, and must be annotated by the attribute grammar programmer as such. We would like our scheduling algorithm then to schedule them as early as possible in the total order.
+
+As an example, in a typical compiler there is an attribute containing the errors that occur in compilation. When running the compiler one is typically first interested in knowing if there are any errors; if so they must be printed to the screen and the compiler can stop its compilation. If there are no errors, then all other work that is not strictly necessary for the generation of errors can be done to complete the compilation.
+
+\Jeroen{todo: describe how}
 
 \section{Conclusion and discussion} \label{sect:conclusion}
 \Jeroen{todo: het werkt, misschien is andere representatie beter, en het is onvoorspelbaarder dus misschien duren sommige ags ineens heel lang om te schedulen}
