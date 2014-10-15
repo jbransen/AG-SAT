@@ -191,17 +191,17 @@ The UHC is compiled using the Utrecht University Attribute Grammar Compiler (UUA
     \begin{tabular}{l || c || r}
       Algorithm   &   Manual annotations   &  Compile time MainAG \\
       \hline
-      Kastens'                &   Y           &   25s \\
-      Kennedy-Warren  &   N           &   2s \\
-      LOAG-backtrack  &   N           &   35s \\
-      LOAG-SAT           &   N           &   10s \\
+      Kastens'                &   Y           &   17s \\
+      Kennedy-Warren  &   N           &   33s \\
+      LOAG-backtrack  &   N           &   36s \\
+      LOAG-SAT           &   N           &   9s \\
     \end{tabular}
   \end{center}
   \caption{Comparison of the four scheduling algorithms}
   \label{tab:algo-comparison}
 \end{table}
 
-In \tabref{tab:algo-comparison} we show the compilation times for the MainAG of the UHC for each of the four different algorithms. This time includes parsing of the attribute grammar description and code generation, which is what takes most time in the SAT approach. The SAT-solver takes less than a second to find a solution. \Jeroen{De tijd voor Kennedy-Warren kan niet kloppen, Thomas kun jij die nog eens checken? Op mijn machine doen alle opties er veel langer over...}
+In \tabref{tab:algo-comparison} we show the compilation times for the MainAG of the UHC for each of the four different algorithms. All times include parsing of the attribute grammar description and code generation, which is what takes most time in the SAT approach. The SAT-solver takes less than a second to find a solution.
 
 \subsection{Chordal graph heuristics} \label{sect:heuristics}
 \begin{table}
