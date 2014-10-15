@@ -47,10 +47,7 @@ encoding such graph properties in SAT.
 
 There are two main advantages to using a SAT-solver for scheduling:
 (1) the scheduling algorithm runs much faster than existing scheduling
-algorithms on real-world examples\Thomas{Waarmee vergelijken we? 
-Kastens algoritme is niet voor LOAGs, het voordeel dat onze aanpak geen 
-augmenting dependencies nodig heeft zou dan in de vergelijking genoemd moeten 
-worden}, and (2) by adding extra constraints
+algorithms on real-world examples, and (2) by adding extra constraints
 we obtain fine-grained control over the resulting schedule, thereby
 enabling new scheduling optimisations.
 
@@ -109,11 +106,11 @@ For dynamic scheduling one could rely on existing machinery for lazy evaluation,
 
 There are two problems with the dynamic scheduling. First of all whenever the attribute grammar contains a true cyclic attribute definition, the evaluator enters an infinite loop at runtime. However, these cycles could have been detected at compile time! Furthermore, the code needs lazy functions while with the static scheduling strict evaluators can be generated, leading to more effient code in practice.
 
-For static scheduling efficient evaluators can be generated, but the problem is that static scheduling is hard. In \cite{kastens80} a polynomial time algorithm is given for static scheduling of the class of ordered attribute grammars, but unfortunately we often encounter attribute grammars outside of that class. All our attribute grammars do however fall in the class of linear ordered attribute grammars, which is the largest class of attribute grammars for which a static schedule can be found. Although the scheduling is NP-complete, we have implemented a backtracking algorithm in earlier work \cite{Binsbergen:2015} that is feasible in practice. However, in this paper we show that we can do better\Thomas{Faster and allowing for the different optimisations}.
+For static scheduling efficient evaluators can be generated, but the problem is that static scheduling is hard. In \cite{kastens80} a polynomial time algorithm is given for static scheduling of the class of ordered attribute grammars, but unfortunately we often encounter attribute grammars outside of that class. All our attribute grammars do however fall in the class of linear ordered attribute grammars, which is the largest class of attribute grammars for which a static schedule can be found. Although the scheduling is NP-complete, we have implemented a backtracking algorithm in earlier work \cite{Binsbergen:2015} that is feasible in practice. However, in this paper we show that we can do better by creating an algorithm that is faster and allows for different optimisations on the resulting schedule.
 
 Conceptually, static scheduling of linear ordered attribute grammars is not very complex. For each nonterminal a total order should be found on its attributes, such that all production dependency graphs all cycle free. However, because a nonterminal can have multiple productions and a production can have children of different types, choices made on the order of attributes of one nonterminal can influence the order of attributes in another nonterminal.
 
-In order to encode this we also construct a \emph{nonterminal dependency graph}. This graph contains all attributes that are defined for the corresponding nonterminal and the edges in this graph must define a total order\Thomas{Actually it can be partial, which is also what we obtain using a variable for every inherited x synthesized pair. For example, an interface with only 1 visit (and multiple inherited or synthesized attributes) defines a partial order since we don't care about the order between inherited/synthesized attributes in the same visit. The visit-sequences that are calculated in the end do imply a total order however.} on the attributes. Furthermore, the edges in the nonterminal dependency graph should agree with the (indirect) dependencies from the production dependency graphs such that no cycles exist.
+In order to encode this we also construct a \emph{nonterminal dependency graph}. This graph contains all attributes that are defined for the corresponding nonterminal and the edges in this graph must define a total order\Thomas{Actually it can be partial, which is also what we obtain using a variable for every inherited x synthesized pair. For example, an interface with only 1 visit (and multiple inherited or synthesized attributes) defines a partial order since we don't care about the order between inherited/synthesized attributes in the same visit. The visit-sequences that are calculated in the end do imply a total order however.}\Jeroen{Yes, but it can also just be total, which is much easier to explain, and I think this detail doesn't matter here} on the attributes. Furthermore, the edges in the nonterminal dependency graph should agree with the (indirect) dependencies from the production dependency graphs such that no cycles exist.
 
 \mypic{labval_bin_flow_induced}{Production dependency graph for Bin for the order a2 $\rightarrow$ a4 $\rightarrow$ a1 $\rightarrow$ a3}
 
