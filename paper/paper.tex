@@ -23,6 +23,7 @@
 \newcommand{\Thomas}[1]{\REM{Thomas}{red}{#1}}
 
 \newcommand{\figref}[1]{Figure~\ref{#1}}
+\newcommand{\tabref}[1]{Table~\ref{#1}}
 \newcommand{\sectref}[1]{Section~\ref{#1}}
 
 % Handle citing "Van Binsbergen" correctly...
@@ -142,7 +143,7 @@ a cycle n-s-w or n-e-s.}
 
 In our case the graphs are directed, but we can still apply the same trick! In \figref{fig:simplechord} we illustrate how to use chordal graphs to exclude cycles. If there exists a cycle of length four, then it is not possible to choose a direction for the edge between \emph{n} and \emph{s} without introducing a cycle of length three. Hence, if we make our graph chordal by adding edges which may have an arbitrary direction and explicitly exclude all cycles of length three, we ensure that no cycles can exist at all.
 
-\subsection{Chordal graph construction}
+\subsection{Chordal graph construction} \label{sect:chordalconstruct}
 There are several algorithms for making a graph chordal. We use an algorithm based on the following alternative definition of a chordal graph:
 
 \begin{definition}
@@ -170,7 +171,7 @@ From this definition we can construct the following algorithm for making a graph
  \end{enumerate}
 \end{enumerate}
 
-One important open question in this algorithm is the order in which the vertices should be chosen. In \sectref{sect:results} we show the results for several heuristics that we have implemented and tried on the UHC. We would like to remark that regardless of the heuristic used, this approach always leads to much smaller SAT problems than encoding transitivity in the SAT problem for ruling out cycles.
+One important open question in this algorithm is the order in which the vertices should be chosen. In \sectref{sect:heuristics} we show the results for several heuristics that we have implemented and tried on the UHC. We would like to remark that regardless of the heuristic used, this approach always leads to much smaller SAT problems than encoding transitivity in the SAT problem for ruling out cycles.
 
 \subsection{Finding the schedule}
 When the constructed Boolean formula is given to the SAT-solver, the result is either that the formula is not satisfiable, meaning that no schedule has been found, of satisfiable, meaning that there is a schedule. It is not hard to see that the formula is satisfiable if and only if there exists a valid schedule for the given attribute grammar definition, and in this paper we give no formal proof of this claim.
@@ -178,7 +179,60 @@ When the constructed Boolean formula is given to the SAT-solver, the result is e
 In the case where the formula is satisfiable, we obviously want to find the result. From the SAT solver we can ask for the truth value of each variable in the solution, so when our algorithm keeps the connection between edges and variables we can complete our directed graph and trivially find the complete order for all attributes from that. The constraints guarantee that this graph contains no cycles.
 
 \section{Empirical results} \label{sect:results}
-\Jeroen{todo: getallen over UHC laten zien, het werkt echt}
+As a test case for our work we use the Utrecht Haskell Compiler (UHC) \cite{Dijkstra:2009}. The source code of the UHC consists of several attribute grammar definitions together with Haskell code. The biggest attribute grammar in the UHC, called \emph{MainAG}, consists of 30 nonterminals, 134 productions, 1332 attributes (44.4 per nonterminal) and 9766 dependencies and is the biggest attribute grammar we know of.
+
+The UHC is compiled using the Utrecht University Attribute Grammar Compiler (UUAGC) \cite{combinator-languages}, in which we have implemented our approach. Apart from our SAT approach there are three other scheduling algorithms that have been implemented to which we can compare our approach:
+
+\begin{itemize}
+\item \emph{Kastens}: the algorithm from \cite{kastens80} which only works for ordered attribute grammars, of which MainAG is not a member. However, with extra manual annotations this algorithm can generate a schedule, which is the approach used previously. However, as writing these annotation is hard an error-prone, this is not an optimal solution.
+\item \emph{Kennedy-Warren}: The algorithm from \cite{kennedywarren76} that we have implemented in the UUAGC before \cite{bransen2012} is an algorithm that schedules all absolutely noncircular attribute grammars, an even larger class than the linear ordered attribute grammars. However, the scheduling is not completely static so the generated evaluator also does part of the scheduling at runtime. 
+\item \emph{LOAG-backtrack}: we have also implemented a backtracking algorithm \cite{Binsbergen:2015} for linear ordered attribute grammars, based on Kastens' algorithm. This algorithm solves exactly the same scheduling problem as the SAT approach described in this paper.
+\end{itemize} 
+
+\begin{table}
+  \begin{center}
+    \begin{tabular}{l || c || r}
+      Algorithm   &   Manual annotations   &  Compile time MainAG \\
+      \hline
+      Kastens'                &   Y           &   25s \\
+      Kennedy-Warren  &   N           &   2s \\
+      LOAG-backtrack  &   N           &   35s \\
+      LOAG-SAT           &   N           &   10s \\
+    \end{tabular}
+  \end{center}
+  \caption{Comparison of the four scheduling algorithms}
+  \label{tab:algo-comparison}
+\end{table}
+
+In \tabref{tab:algo-comparison} we show the compilation times for the MainAG of the UHC for each of the four different algorithms. This time includes parsing of the attribute grammar description and code generation, which is what takes most time in the SAT approach. The SAT-solver takes less than a second to find a solution. \Jeroen{De tijd voor Kennedy-Warren kan niet kloppen, Thomas kun jij die nog eens checken? Op mijn machine doen alle opties er veel langer over...}
+
+\subsection{Chordal graph heuristics} \label{sect:heuristics}
+\begin{table}
+  \begin{center}
+    \begin{tabular}{c r r r }
+      Order                                   &   \#Clauses   & \#Vars       & Ratio \\
+      \hline
+      $(\mid\mathcal{D}\mid,\mid\mathcal{S}\mid,\mid\mathcal{C}\mid)$ &  21,307,812  & \quad 374,792           & \quad 57.85 \\
+      $(\mid\mathcal{D}\mid,\mid\mathcal{C}\mid,\mid\mathcal{S}\mid)$ &   8,301,557   & 220,690           & 37.62 \\
+      $(\mid\mathcal{S}\mid,\mid\mathcal{D}\mid,\mid\mathcal{C}\mid)$ &  12,477,519   & 287,151           & 43.45 \\
+      $(\mid\mathcal{S}\mid,\mid\mathcal{C}\mid,\mid\mathcal{D}\mid)$ &   8,910,379   & 241,853           & 36.84 \\
+      $(\mid\mathcal{C}\mid,\mid\mathcal{D}\mid,\mid\mathcal{S}\mid)$ &   3,004,705   & 137,277           & 21.89 \\
+      $(\mid\mathcal{C}\mid,\mid\mathcal{S}\mid,\mid\mathcal{D}\mid)$ &   3,359,910   & 156,795           & 21.43 \\
+      $(\mid\mathcal{D}\mid+\mid\mathcal{S}\mid,\mid\mathcal{C}\mid)$     &  12,424,635   & 386,323           & 32.16 \\
+      $(\mid\mathcal{D}\mid,\mid\mathcal{S}\mid+\mid\mathcal{C}\mid)$     &   8,244,600   & 219,869           & 37.50 \\
+      $(\mid\mathcal{D}\mid+\mid\mathcal{C}\mid,\mid\mathcal{S}\mid)$     &   2,930,922   & 135,654           & 21.61 \\
+      $(\mid\mathcal{S}\mid,\mid\mathcal{D}\mid+\mid\mathcal{C}\mid)$     &   8,574,307   & 236,348           & 36.28 \\
+      $(\mid\mathcal{S}\mid+\mid\mathcal{C}\mid,\mid\mathcal{D}\mid)$     &   3,480,866   & 157,089           & 22.16 \\
+      $(\mid\mathcal{C}\mid,\mid\mathcal{D}\mid+\mid\mathcal{S}\mid)$     &   3,392,930   & 157,568           & 21.53 \\
+      $(\mid\mathcal{C}\mid+\mid\mathcal{D}\mid+\mid\mathcal{S}\mid)$     &   3,424,001   & 148,724           & 23.02 \\
+      $(3*\mid\mathcal{S}\mid*(\mid\mathcal{D}\mid+\mid\mathcal{C}\mid)+(\mid\mathcal{D}\mid*\mid\mathcal{C}\mid) ^2)$     &   \underline{2,679,772}   & \underline{127,768}           & \underline{20.97} \\ \\
+    \end{tabular}
+  \end{center}
+  \caption{Table showing the number of clauses and variables required for solving the MainAG of the UHC, selecting the next vertex in the elimination order based on different ways to compare neighbourhoods.}
+  \label{tab:edgecomp}
+\end{table}
+
+As explained in \sectref{sect:chordalconstruct} we need to find an order in which to handle the vertices such that the resulting SAT problem is as small as possible. In \tabref{tab:edgecomp} we show the results of different heuristics for the MainAG of the UHC. In this table we use three different sets: $\mathcal{D}$ is the set of direct dependencies, $\mathcal{C}$ is the set of edges that are added to make the graph chordal and $\mathcal{S}$ is the set of other edges. For each of the sets we take only the edges in the neigbourhood of \emph{v} for comparison.
 
 \section{Optimisations} \label{sect:optimisations}
 \Jeroen{todo: laten zien dat we totaal aantal visits kunnen minimaliseren en dat we sommige attributen vroeg kunnen schedulen, en intuitie geven waarom dit nuttig is (meer hebben we ook nog niet)}
