@@ -132,7 +132,7 @@ Our algorithm has the following steps:
 \item Exclude all cycles of length three
 \item Optionally add extra constraints for optimisations
 \end{enumerate}
-The first two steps have been explained in the previous sections. Step 3 is explained below\Thomas{Step 4 is missing}, and step 5 and 6 follow from that. Finally step 7 is explained in \sectref{sect:optimisations}.
+The first two steps have been explained in the previous sections. Step 3 is explained below, step 4 is trivial, and step 5 and 6 follow from the explanation below. Finally step 7 is explained in \sectref{sect:optimisations}.
 
 \subsection{Chordal graphs}
 A chordal graph is an undirected graph in which each cycle of length $> 3$ contains a \emph{chord}. A chord is an edge between two nodes in the cycle that are not adjacent. The result of this is that each cycle of length $> 3$ is split up into two smaller cycles, so if a chordal graph contains a cycle it must also contain a cycle of size three. Chordal graphs are therefore sometimes also referred to as \emph{triangulated graphs}.
@@ -142,7 +142,35 @@ a cycle n-s-w or n-e-s.}
 
 In our case the graphs are directed, but we can still apply the same trick! In \figref{fig:simplechord} we illustrate how to use chordal graphs to exclude cycles. If there exists a cycle of length four, then it is not possible to choose a direction for the edge between \emph{n} and \emph{s} without introducing a cycle of length three. Hence, if we make our graph chordal by adding edges which may have an arbitrary direction and explicitly exclude all cycles of length three, we ensure that no cycles can exist at all.
 
-\Jeroen{todo: say something about heuristics for making the graph chordal and how many triangles there are}
+\subsection{Chordal graph construction}
+There are several algorithms for making a graph chordal. We use an algorithm based on the following alternative definition of a chordal graph:
+
+\begin{definition}
+An undirected graph is \emph{chordal} if and only if it has a 
+perfect elimination order. A perfect elimination order is an
+ordering $v_1,\ldots,v_n$ of the vertices of $G$ such that in the graph
+$G[v_1,\ldots,v_i]$, $\univ{i}{1 \leq i \leq n}$, the vertex $v_i$ is 
+\toindex{simplicial}. A vertex $v$ is called simplicial in a graph $G$ if
+the neighbourhood of $v$ forms a connected component in $G$.
+The graph $G[v_1,\ldots,v_i]$ is the induced subgraph of $G$ containing
+only the vertices $v_i,\ldots,v_i$ and the edges between these vertices.
+\end{definition}
+
+From this definition we can construct the following algorithm for making a graph chordal:
+\begin{enumerate}
+ \item While the graph still contains vertices:
+ \begin{enumerate}
+     \item Select a vertex $v$ from the graph
+     \item For every pair $(a,b)$ of unconnected vertices in the neighbourhood
+        of $v$: 
+        \begin{enumerate}
+            \item Add the edge $(a\leftrightarrow b)$ to the graph
+        \end{enumerate}
+     \item Remove $v$, and all edges connected to $v$, from the graph.
+ \end{enumerate}
+\end{enumerate}
+
+One important open question in this algorithm is the order in which the vertices should be chosen. In \sectref{sect:results} we show the results for several heuristics that we have implemented and tried on the UHC. We would like to remark that regardless of the heuristic used, this approach always leads to much smaller SAT problems than encoding transitivity in the SAT problem for ruling out cycles.
 
 \subsection{Finding the schedule}
 When the constructed Boolean formula is given to the SAT-solver, the result is either that the formula is not satisfiable, meaning that no schedule has been found, of satisfiable, meaning that there is a schedule. It is not hard to see that the formula is satisfiable if and only if there exists a valid schedule for the given attribute grammar definition, and in this paper we give no formal proof of this claim.
