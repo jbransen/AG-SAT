@@ -63,7 +63,7 @@ An attribute grammar essentially describes computations over trees, also known a
 The class of \emph{ordered attribute grammars} \cite{kastens80} is a well-known subclass of attribute grammars for which a polynomial time scheduling algorithm exists. However, despite what the name suggests there exist attribute grammars for which a static evaluation order can be found that do not belong to the class of ordered attribute grammars. In our work on compiler construction we often encountered this situation, giving rise to the need of other scheduling algorithms \cite{bransen2012,Binsbergen:2015}. We therefore look at the class of \emph{linear ordered attribute grammars} in this paper, which is the largest class of attribute grammars for which a static evaluation order can be found. The problem of statically finding such evaluation order is known to be NP-complete \cite{engelfriet82}.
 
 \subsection{Summary}
-We solve the linear ordered attribute grammar scheduling problem by translating it to the Boolean satisfiability problem (SAT), one of the best-known NP-complete problems \cite{Cook:1971}. The SAT problem has been the subject of a lot of research and even though the worst case runtime of all known SAT-solving algorithms is exponential in the input size, many SAT-solvers work very well in practice. \Jeroen{todo: referenties hier, misschien naar SAT-solving overzicht?} By translating to SAT we can therefore use an efficient existing SAT-solver to solve our problem, and even benefit from future improvements in the SAT-community. In our implementation we have used MiniSat\footnote{\url{http://minisat.se}} \cite{Een:2004}.
+We solve the linear ordered attribute grammar scheduling problem by translating it to the Boolean satisfiability problem (SAT), one of the best-known NP-complete problems \cite{Cook:1971}. The SAT problem has been the subject of a lot of research and even though the worst case runtime of all known SAT-solving algorithms is exponential in the input size, many SAT-solvers work very well in practice. \Jeroen{todo: referenties hier, misschien naar SAT-solving overzicht?} By translating to SAT we can therefore use an efficient existing SAT-solver to solve our problem, and even benefit from future improvements in the SAT-community. In our implementation we use MiniSat\footnote{\url{http://minisat.se}} \cite{Een:2004}.
 
 The core of the scheduling problem is essentially a set of dependency graphs (directed acyclic graphs) for which a total order on the nodes should be found such that all direct dependencies, which are coming from the input grammar, are satisfied. However, there is a certain interplay between the different dependency graphs resulting in indirect dependencies, coming from the order that is found in one dependency graph, that need to be satisfied another dependency graph. This interplay of dependencies, which is explained later in detail, is what makes the problem hard.
 
@@ -176,14 +176,14 @@ When the constructed Boolean formula is given to the SAT-solver, the result is e
 In the case where the formula is satisfiable, we obviously want to find the result. From the SAT solver we can ask for the truth value of each variable in the solution, so when our algorithm keeps the connection between edges and variables we can complete our directed graph and trivially find the complete order for all attributes from that. The constraints guarantee that this graph contains no cycles.
 
 \section{Empirical results} \label{sect:results}
-As a test case for our work we use the Utrecht Haskell Compiler (UHC) \cite{Dijkstra:2009}. The source code of the UHC consists of several attribute grammar definitions together with Haskell code. The biggest attribute grammar in the UHC, called \emph{MainAG}, consists of 30 nonterminals, 134 productions, 1332 attributes (44.4 per nonterminal) and 9766 dependencies and is the biggest attribute grammar we know of.
+We use the Utrecht Haskell Compiler (UHC) \cite{Dijkstra:2009} as a test case for our work. The source code of the UHC consists of several attribute grammar definitions together with Haskell code. The biggest attribute grammar in the UHC, called \emph{MainAG}, consists of 30 nonterminals, 134 productions, 1332 attributes (44.4 per nonterminal) and 9766 dependencies and is the biggest attribute grammar we know of.
 
 The UHC is compiled using the Utrecht University Attribute Grammar Compiler (UUAGC) \cite{combinator-languages}, in which we have implemented our approach. Apart from our SAT approach there are three other scheduling algorithms that have been implemented to which we can compare our approach:
 
 \begin{itemize}
 \item \emph{Kastens}: the algorithm from \cite{kastens80} which only works for ordered attribute grammars, of which MainAG is not a member. However, with extra manual annotations this algorithm can generate a schedule, which is the approach used previously. However, as writing these annotation is hard an error-prone, this is not an optimal solution.
 \item \emph{Kennedy-Warren}: The algorithm from \cite{kennedywarren76} that we have implemented in the UUAGC before \cite{bransen2012} is an algorithm that schedules all absolutely noncircular attribute grammars, an even larger class than the linear ordered attribute grammars. However, the scheduling is not completely static so the generated evaluator also does part of the scheduling at runtime. 
-\item \emph{LOAG-backtrack}: we have also implemented a backtracking algorithm \cite{Binsbergen:2015} for linear ordered attribute grammars, based on Kastens' algorithm. This algorithm solves exactly the same scheduling problem as the SAT approach described in this paper.
+\item \emph{LOAG-backtrack}: we have also implemented a backtracking algorithm for linear ordered attribute grammars \cite{Binsbergen:2015}, based on Kastens' algorithm. This algorithm solves exactly the same scheduling problem as the SAT approach described in this paper.
 \end{itemize} 
 
 \begin{table}
@@ -264,7 +264,7 @@ Another benefit of this approach that the attribute grammar scheduling can benef
 One problem with the current approach in constrast to most other scheduling algorithms is the unpredictability. SAT-solvers use certain heuristics to quickly find solutions in many applications, but it can theoretically happen that for a certain attribute grammar the SAT problem that is generated is not suitable for these heuristics. A seemingly innocent change in the attribute grammar definition could therefore theoretically lead to a large increase in compile time. However, we have not encountered this problem and we believe that this situation is very unlikely to happen because of the maturity of the SAT-solvers.
 
 \DeclareRobustCommand{\VAN}[3]{#3}
-\bibliographystyle{splncs}
+\bibliographystyle{apalike}
 \bibliography{biblio}
 
 \end{document}
