@@ -56,9 +56,9 @@ enabling new scheduling optimisations.
 \end{abstract}
 
 \section{Introduction}
-Attribute Grammars \cite{knuth68} are a formalism for describing the semantics of context-free languages, thereby making them suitable for the construction of compilers. Examples of compilers written using attribute grammars are JastAddJ \cite{Ekman:2007}, a Java compiler, and UHC \cite{Dijkstra:2009}, a Haskell compiler. The UHC is also the motivation for this paper and is used as a real world test case for testing the effectiveness of the given approach.
+Attribute Grammars \cite{knuth68} are a formalism for describing the semantics of context-free languages, thereby making them suitable for the construction of compilers. Examples of compilers written using attribute grammars are JastAddJ \cite{Ekman:2007}, a Java compiler, and UHC \cite{Dijkstra:2009}, a Haskell compiler. The UHC is also the motivation for this paper and is used as a real world test case for evaluating the effectiveness of the given approach.
 
-An attribute grammar essentially describes computations over trees, also known as folds or catamorphisms. Although the attribute grammar defines exactly \emph{what} should be computed, it does not define \emph{when} values should be computed. It is therefore up to the attribute grammar compiler (the compiler that translates the attribute grammar definition into a runtime evaluator) to find an evaluation order. Such an evaluation order or schedule should satisfy the dependencies from the attribute grammar definition and must be found found statically, which means that for the given grammar an evaluation order should be found such that for every finite parse tree of the grammar the evaluation order should compute all values in a finite number of steps. Specifically, no cyclic data dependencies may occur at runtime for any given parse tree.
+An attribute grammar essentially describes computations over trees, also known as folds or catamorphisms. Although the attribute grammar defines exactly \emph{what} should be computed, it does not define \emph{when} values should be computed. It is therefore up to the attribute grammar compiler (the compiler that translates the attribute grammar definition into a runtime evaluator) to find an evaluation order. Such an evaluation order or schedule should satisfy the dependencies from the attribute grammar definition and must be found statically, which means that for the given grammar an evaluation order should be found such that for every finite parse tree of the grammar the evaluation order should compute all values in a finite number of steps. Specifically, no cyclic data dependencies may occur at runtime for any given parse tree.
 
 The class of \emph{ordered attribute grammars} \cite{kastens80} is a well-known subclass of attribute grammars for which a polynomial time scheduling algorithm exists. However, despite what the name suggests there exist attribute grammars for which a static evaluation order can be found that do not belong to the class of ordered attribute grammars. In our work on compiler construction we often encountered this situation, giving rise to the need of other scheduling algorithms \cite{bransen2012,Binsbergen:2015}. We therefore look at the class of \emph{linear ordered attribute grammars} in this paper, which is the largest class of attribute grammars for which a static evaluation order can be found. The problem of statically finding such evaluation order is known to be NP-complete \cite{engelfriet82}.
 
@@ -76,7 +76,7 @@ In this paper we make the following main contributions:
 \begin{itemize}
 \item We show how to encode the problem of scheduling linear ordered attribute grammars as a SAT-problem
 \item We show that chordal graphs can be used to encode cycle-freeness in SAT-problems involving graph encoding
-\item We show how certain attribute grammar optimisations can be encode in the SAT-problem
+\item We show how certain attribute grammar optimisations can be encoded in the SAT-problem
 \end{itemize}
 Furthermore, we have implement the described techniques in the UUAGC\footnote{\url{http://www.cs.uu.nl/wiki/HUT/AttributeGrammarSystem}} \cite{combinator-languages} and show that the technique works well in practice for the UHC.
 
@@ -114,7 +114,7 @@ In order to encode this we also construct a \emph{nonterminal dependency graph}.
 
 \mypic{labval_bin_flow_induced}{Production dependency graph for Bin for the order a2 $\rightarrow$ a4 $\rightarrow$ a1 $\rightarrow$ a3}
 
-In \figref{fig:labval_bin_flow_induced} we show the production dependency graph of the nonterminal \emph{Bin} with a complete order on the attributes. In this case there is only a single nonterminal so both the parent and the child nodes have the same attribute order, made explicit by extra edges from the nonterminal dependency graph. Because this dependency graph is still cycle free after adding the edges for the complete order and the same holds for the \emph{Leaf} production, the order a2 $\rightarrow$ a4 $\rightarrow$ a1 $\rightarrow$ a3 is a valid schedule for the nonterminal \emph{Tree}.
+In \figref{fig:labval_bin_flow_induced} we show the production dependency graph of the production \emph{Bin} with a complete order on the attributes. In this case there is only a single nonterminal so both the parent and the child nodes have the same attribute order, made explicit by extra edges from the nonterminal dependency graph. Because this dependency graph is still cycle free after adding the edges for the complete order and the same holds for the \emph{Leaf} production, the order a2 $\rightarrow$ a4 $\rightarrow$ a1 $\rightarrow$ a3 is a valid schedule for the nonterminal \emph{Tree}.
 
 
 \section{Translation to SAT} \label{sect:translation}
@@ -175,15 +175,20 @@ When the constructed Boolean formula is given to the SAT-solver, the result is e
 
 In the case where the formula is satisfiable, we obviously want to find the result. From the SAT solver we can ask for the truth value of each variable in the solution, so when our algorithm keeps the connection between edges and variables we can complete our directed graph and trivially find the complete order for all attributes from that. The constraints guarantee that this graph contains no cycles.
 
+\subsection{Shared edges}
+One important implementation detail is that of shared edges. As explained, the nonterminal dependency graphs and the production dependency graphs share the edges that define the order of the attributes. Because each edge is represented by a variable in the SAT problem we can simply encode this by assigning the same variable to the shared edges.
+
+However, as we also make both graphs chordal, the edges added to make the graphs chordal can also be shared. This is exactly what our implementation does, such that the SAT-problem is kept as small as possible. The implementation is therefore slightly more complicated than explained in the previous sections.
+
 \section{Empirical results} \label{sect:results}
 We use the Utrecht Haskell Compiler (UHC) \cite{Dijkstra:2009} as a test case for our work. The source code of the UHC consists of several attribute grammar definitions together with Haskell code. The biggest attribute grammar in the UHC, called \emph{MainAG}, consists of 30 nonterminals, 134 productions, 1332 attributes (44.4 per nonterminal) and 9766 dependencies and is the biggest attribute grammar we know of.
 
 The UHC is compiled using the Utrecht University Attribute Grammar Compiler (UUAGC) \cite{combinator-languages}, in which we have implemented our approach. Apart from our SAT approach there are three other scheduling algorithms that have been implemented to which we can compare our approach:
 
 \begin{itemize}
-\item \emph{Kastens}: the algorithm from \cite{kastens80} which only works for ordered attribute grammars, of which MainAG is not a member. However, with extra manual annotations this algorithm can generate a schedule, which is the approach used previously. However, as writing these annotation is hard an error-prone, this is not an optimal solution.
+\item \emph{Kastens}: the algorithm from \cite{kastens80} which only works for ordered attribute grammars, of which MainAG is not a member. However, with extra manual annotations this algorithm can generate a schedule, which is the approach used previously. However, as writing these annotation is hard an error-prone, this is not an optimal workflow.
 \item \emph{Kennedy-Warren}: The algorithm from \cite{kennedywarren76} that we have implemented in the UUAGC before \cite{bransen2012} is an algorithm that schedules all absolutely noncircular attribute grammars, an even larger class than the linear ordered attribute grammars. However, the scheduling is not completely static so the generated evaluator also does part of the scheduling at runtime. 
-\item \emph{LOAG-backtrack}: we have also implemented a backtracking algorithm for linear ordered attribute grammars \cite{Binsbergen:2015}, based on Kastens' algorithm. This algorithm solves exactly the same scheduling problem as the SAT approach described in this paper.
+\item \emph{LOAG-backtrack}: we have also implemented a backtracking algorithm for linear ordered attribute grammars \cite{Binsbergen:2015}, based on Kastens' algorithm. This algorithm solves exactly the same scheduling problem as the SAT approach described in this paper and uses exponential time in worst-case.
 \end{itemize} 
 
 \begin{table}
@@ -232,7 +237,7 @@ In \tabref{tab:algo-comparison} we show the compilation times for the MainAG of 
 As explained in \sectref{sect:chordalconstruct} we need to find an order in which to handle the vertices such that the resulting SAT problem is as small as possible. In \tabref{tab:edgecomp} we show the results of different heuristics for the MainAG of the UHC. In this table we use three different sets: $\mathcal{D}$ is the set of direct dependencies, $\mathcal{C}$ is the set of edges that are added to make the graph chordal and $\mathcal{S}$ is the set of other edges. For each of the sets we take only the edges in the neighbourhood of \emph{v} for comparison.
 
 \section{Optimisations} \label{sect:optimisations}
-We have shown that expressing the scheduling problem as a SAT problem and using an existing SAT-solver can improve the running time of the scheduling, but that is not the only advantage. In the SAT problem one can easily add extra constraints to further influence the resulting schedule. In this section we show two of such optimisations that are useful from an attribute grammar perspective.
+We have shown that expressing the scheduling problem as a SAT problem and using an existing SAT-solver can improve the running time of the scheduling, but that is not the only advantage. In the SAT problem one can easily add extra constraints to further influence the resulting schedule. In this section we show two of such optimisations that are useful from an attribute grammar perspective. These optimisations have not been implemented in the release version of the UUAGC, but we have run preliminary experiments to verify that they work as expected.
 
 \subsection{Minimising visits}
 The result of the static scheduling is a runtime evaluator that computes the values of the attributes for a given abstract syntax tree. The total order for each nonterminal defines in what order attributes should be computed, but in the implementation of the evaluator we make use of a slightly bigger unit of computation: a \emph{visit}.
@@ -246,7 +251,7 @@ It is theoretically impossible to minimise the total number of visits performed 
 \Jeroen{todo: describe how}
 
 \subsection{Eager attributes}
-Another optimisation is the ability of defining \emph{eager attributes}. Eager attributes are attributes that should be computed as soon as possible, and must be annotated by the attribute grammar programmer as such. We would like our scheduling algorithm then to schedule them as early as possible in the total order.
+Another optimisation is the ability to define \emph{eager attributes}. Eager attributes are attributes that should be computed as soon as possible, and must be annotated by the attribute grammar programmer as such. We would like our scheduling algorithm then to schedule them as early as possible in the total order.
 
 As an example, in a typical compiler there is an attribute containing the errors that occur in compilation. When running the compiler one is typically first interested in knowing if there are any errors; if so they must be printed to the screen and the compiler can stop its compilation. If there are no errors, then all other work that is not strictly necessary for the generation of errors can be done to complete the compilation.
 
@@ -255,13 +260,15 @@ As an example, in a typical compiler there is an attribute containing the errors
 \section{Conclusion and discussion} \label{sect:conclusion}
 We have explained the difficulties in attribute grammar scheduling and shown how to solve this problem using a SAT-solver. The given approach has been implemented and tested on a full-scale compiler built using attribute grammars. Results show that the algorithm works much faster than other approaches.
 
-In the translation to the SAT-problem we have used a novel technique for ruling out cycles in the SAT problem using chordal graphs. This technique makes the problems much smaller than directly ruling out cycles, while encoding the same restrictions. We believe that this technique is applicable in other problems using SAT-solvers too.
+In the translation to the SAT-problem we have used a novel technique for ruling out cycles in the SAT problem using chordal graphs. This technique makes the problems much smaller than directly ruling out cycles, while encoding the same restrictions. We believe that this technique is applicable in other problems using SAT-solvers as well.
 
 Furthermore, we have shown that expressing the problem as a SAT problem has the advantage that extra constraints can be added. We illustrated this with two possible properties of the resulting schedule that an attribute grammar programmer may want to influence. Even though this makes the scheduling problem potentially harder, as the algorithm is left fewer choices, the solution is found very fast in all practical cases we have tried.
 
 Another benefit of this approach that the attribute grammar scheduling can benefit from breakthroughs in the SAT community. The more efficient SAT solvers become, the better the attribute grammar scheduling becomes leading to larger and larger attribute grammars that are feasible to schedule.
 
 One problem with the current approach in contrast to most other scheduling algorithms is the unpredictability. SAT-solvers use certain heuristics to quickly find solutions in many applications, but it can theoretically happen that for a certain attribute grammar the SAT problem that is generated is not suitable for these heuristics. A seemingly innocent change in the attribute grammar definition could therefore theoretically lead to a large increase in compile time. However, we have not encountered this problem and we believe that this situation is very unlikely to happen because of the maturity of the SAT-solvers.
+
+All in all, we believe that this approach fully solves the basic scheduling problem in an elegant way. There are ample possibilities for improving the resulting schedules based on attribute grammar knowledge like the two discussed in \sectref{sect:optimisations}, so we have also made room for future improvements in the scheduling and compilation of attribute grammars.
 
 \DeclareRobustCommand{\VAN}[3]{#3}
 \bibliographystyle{apalike}
