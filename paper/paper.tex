@@ -269,6 +269,8 @@ We use the following algorithm for minimising the maximal number of visits:
 
 The above algorithm features a complicated combination of counting networks; one network for each production rule, and one network for each corresponding output of these networks. Still, the procedure finds optimal solutions very quickly in practice, in times that are negligable and not practically measurable compared to the time of generating the initial SAT-problem. The number of iterations for the minimisation loops has never been more than 5 in any of our problems.
 
+The algorithm is guaranteed to find the global optimum. For our largest example, the solution found had a total of 130 visits, which was 29 visits less in total than the previously known optimimum, found using backtracking heuristics.
+
 One could criticise the usefulness of this particular optimisation for attribute grammars. Indeed, details in how one should optimise the number of visits depend very much on the kind of trees we are going to run the compiled code on. Our point is that we can easily express variants of optimisations. For example, we can also minimise the sum of all visits using a similar (but simpler) procedure to the one above. Again, the running time of that procedure is very short.
 
 \subsection{Eager attributes} \label{sect:eagerattributes}
