@@ -249,48 +249,42 @@ Because invoking a visit at runtime may have a certain overhead, we would like t
 
 It is theoretically impossible to minimise the total number of visits performed for the full abstract syntax tree, because at compile-time we do not have a concrete abstract syntax tree at hand and only know about the grammar. We therefore try to minimise the maximum number of visits for any nonterminal, which is the number of alternating pairs of inherited and synthesized attributes in the total order.
 
-We use the following algorithm:
+In our algorithm, we use efficient counting constraints, expressed in the SAT solver using sorting networks \cite{counting-sorting}. This enables us to count the number of true literals in a given set of literals, and express constraints about this number. A standard procedure for finding a solution for which the minimal number of literals in such a set is true can be implemented on top of a SAT-solver using a simple loop.
+
+We use the following algorithm for minimising the maximal number of visits:
 \begin{enumerate}
 \item Construct the initial SAT problem and solve
-\item Repeat while there is a solution:
+\item Construct the set of all production rules $P$
+\item Construct counting networks that count the number of visits $V(p)$ for all production rules $p$ in $P$
+\item Count the number of visits for each production rule in the current solution; let $M$ be the maximum value 
+\item Repeat while $M > 0$:
 \begin{enumerate}
-\item Find the longest chain of alternating inherited/synthesized attributes (which is the maximum number of visits)
-\item If this maximum is lower then the previous best, store this result
-\item Add a constraint stating that at least one of the edges in this chain must be reversed
-\item Call solve again
+\item Add constraints that express that for all productions $p$ in $P$: $V(p) \leq M$
+\item Construct a counting network that counts how many production rules $p$ have $V(p)=M$
+\item Compute a solution for which this number is minimised using the loop described above
+\item Remove all $p$ in $P$ for which now $V(p) = M$ from the set $P$
+\item Compute the new maximum value $M$ of $V(p)$ for all $p$ left in $P$
 \end{enumerate}
 \end{enumerate}
 
-Remark that removing the longest chain of visits might lead to a worst schedule, as this could result in other nonterminals using even more visits. We therefore need to store the best result found so far separately. However, it is guaranteed that this procedure will find the optimal result, and experiments have shown it usually does so quickly.
+The above algorithm features a complicated combination of counting networks; one network for each production rule, and one network for each corresponding output of these networks. Still, the procedure finds optimal solutions very quickly in practice, in times that are negligable and not practically measurable compared to the time of generating the initial SAT-problem. The number of iterations for the minimisation loops has never been more than 5 in any of our problems.
+
+One could criticise the usefulness of this particular optimisation for attribute grammars. Indeed, details in how one should optimise the number of visits depend very much on the kind of trees we are going to run the compiled code on. Our point is that we can easily express variants of optimisations. For example, we can also minimise the sum of all visits using a similar (but simpler) procedure to the one above. Again, the running time of that procedure is very short.
 
 \subsection{Eager attributes} \label{sect:eagerattributes}
 Another optimisation is the ability to define \emph{eager attributes}. Eager attributes are attributes that should be computed as soon as possible, and must be annotated by the attribute grammar programmer as such. We would like our scheduling algorithm then to schedule them as early as possible in the total order.
 
 As an example, in a typical compiler there is an attribute containing the errors that occur in compilation. When running the compiler one is typically first interested in knowing if there are any errors; if so they must be printed to the screen and the compiler can stop its compilation. If there are no errors, then all other work that is not strictly necessary for the generation of errors can be done to complete the compilation.
 
-We can use the following algorithm to implement this:
-\begin{enumerate}
-\item Construct the initial SAT problem and solve
-\item Create a set $\mathcal{E}$ with the eager attributes
-\item While $\mathcal{E}$ is not empty:
-\begin{enumerate}
-\item Take an attribute $\mathcal{A}$ from the set $\mathcal{E}$
-\item For all dependencies of $\mathcal{A}$, add constraint that at least one the edges must be reverted
-\item Solve, and if there is a solution:
-\begin{enumerate}
-\item Add $\mathcal{A}$ again to the set $\mathcal{E}$
-\end{enumerate}
-\item If there is no solution:
-\begin{enumerate}
-\item Revert to the previous solution (MiniSat allows this)
-\item Add all dependencies of $\mathcal{A}$ to $\mathcal{E}$
-\end{enumerate}
-\end{enumerate}
-\end{enumerate}
+In order to schedule a given attribute as early as possible, we are going to partition all attributes contained in the grammar into two sets $E$ (for early) and $L$ (for late). The idea is that $E$ contains all attributes that may be needed to be computed before the eager attribute (i.e. there exist production rules which require this), and $L$ contains all attributes that we can definitely compute after knowing the eager attribute (i.e. no production rule requires any attribute in $L$ for computing the eager attribute). We want to find a schedule for which the size of $E$ is minimal.
 
-One important remark here is that $\mathcal{E}$ does not necessarily contain attributes from the same nonterminal. If at the root of the abstract syntax tree we would like to have an attribute depend on as few other attributes as possible, it may be the case that deeper in the tree the attributes need to be reordered in order to achieve that goal. The dependencies of $\mathcal{A}$ therefore means the dependencies in a production nonterminal graph, which can include attributes of other nonterminals (because children of a production can be of different nonterminals).
+To compute this, we introduce a SAT variable $E(a)$ for every attribute $a$, that expresses whether or not $a$ is in $E$ or not. We set $E(a)$ to be true for the initial eager attribute $a$. We go over the graphs for the non-terminals and production rules, and generates constraints that express that whenever $a$ points to $b$ and we have $E(b)$, then we also need $E(a)$.
 
-In contrast to the previous optimisation, this algorithm does not find a global optimum. Because optimistic choices are made this algorithm finds a local minimum, which may be much worse than the global optimum. We have not been able to verify what the influences of this are.
+Finally, we use a counting network for all literals $E(a)$, and ask for a solution that minimises the number of literals in $E$.
+
+We have run this algorithm on ever output attribute of the top-level non-terminal of all our examples. For our largest grammar, the hardest output to compute took 1 second. So, while a harder optimisation than the previous one, it is very doable in practice.
+
+One can imagine other variants of this optimisation, where we have a set of eager attributes, or a combination of eager and late attributes. At the time of the writing of this paper, we have not experimented with such variants yet.
 
 \section{Discussion and Conclusion} \label{sect:conclusion}
 We have explained the difficulties in attribute grammar scheduling and shown how to solve this problem using a SAT-solver. The given approach has been implemented and tested on a full-scale compiler built using attribute grammars. Results show that the algorithm works much faster than other approaches.
