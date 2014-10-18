@@ -117,7 +117,7 @@ The nonterminal dependency graphs and production dependency graphs are consisten
 \figref{fig:labval_bin_flow_induced} shows the production dependency graph of the production \emph{Bin} with a complete order on the attributes. In this case there is only a single nonterminal so both the parent and the child nodes have the same attribute order, made explicit by extra edges from the nonterminal dependency graph. Because this dependency graph is still cycle free after adding the edges for the complete order and the same holds for the \emph{Leaf} production, the order a2 $\rightarrow$ a4 $\rightarrow$ a1 $\rightarrow$ a3 is a valid schedule for the nonterminal \emph{Tree}.
 
 To find the total order we add edges to the nonterminal dependency graph and rely on the SAT-solver to determine their direction. Instead of adding an edge for all possible pairs of attributes it is sufficient to add an edge for all pairs of inherited and synthesized attributes.
-The order described by an assignment to these variables is not (always) total as there might be pairs of attributes, which attributes are either both inherited or both synthesized, without a relative ordering. This is not a problem as the evaluation order for such pairs can be chosen arbitrarily\Thomas{Dit beschouw ik zelf als een belangrijk resultaat. Het is de uitkomst van het lange proces waarin ik geprobeerd heb de minimale definitie van het probleem van LOAG scheduling te geven. Maar om dit beter te kunnen uitleggen heb ik 'visits' nodig.}. 
+The order described by an assignment to these variables is not (always) total as there might be pairs of attributes, which attributes are either both inherited or both synthesized, without a relative ordering. This is not a problem as the evaluation order for such pairs can be chosen arbitrarily.
 
 
 \section{Translation into SAT} \label{sect:translation}
@@ -272,9 +272,9 @@ We use the following algorithm for minimising the maximal number of visits:
 \end{enumerate}
 \end{enumerate}
 
-The above algorithm features a complicated combination of counting networks; one network for each production rule, and one network for each corresponding output of these networks. Still, the procedure finds optimal solutions very quickly in practice, in times that are negligable and not practically measurable compared to the time of generating the initial SAT-problem. The number of iterations for the minimisation loops has never been more than 5 in any of our problems.
+The above algorithm features a complicated combination of counting networks; one network for each production rule, and one network for each corresponding output of these networks. Still, the procedure finds optimal solutions very quickly in practice, in times that are negligible and not practically measurable compared to the time of generating the initial SAT-problem. The number of iterations for the minimisation loops has never been more than 5 in any of our problems.
 
-The algorithm is guaranteed to find the global optimum. For our largest example, the solution found had a total of 130 visits, which was 29 visits less in total than the previously known optimimum, found using backtracking heuristics.
+The algorithm is guaranteed to find the global optimum. For our largest example, the solution found had a total of 130 visits, which was 29 visits less in total than the previously known optimum, found using backtracking heuristics.
 
 One could criticise the usefulness of this particular optimisation for attribute grammars. Indeed, details in how one should optimise the number of visits depend very much on the kind of trees we are going to run the compiled code on. Our point is that we can easily express variants of optimisations. For example, we can also minimise the sum of all visits using a similar (but simpler) procedure to the one above. Again, the running time of that procedure is very short.
 
@@ -296,7 +296,7 @@ One can imagine other variants of this optimisation, where we have a set of eage
 \section{Discussion and Conclusion} \label{sect:conclusion}
 We have explained the difficulties in attribute grammar scheduling and shown how to solve this problem using a SAT-solver. The given approach has been implemented and tested on a full-scale compiler built using attribute grammars. Results show that the algorithm works much faster than other approaches.
 
-In the translation into the SAT-problem we have used a novel technique for ruling out cycles in the SAT problem using chordal graphs. The technique was inspired by existing work on chordality for expressing equality logic \cite{bryant-chordal}. Using chordal graphs makes the problems much smaller than directly ruling out cycles, while encoding the same restrictions. We believe that this technique is applicable in other problems using SAT-solvers as well.
+In the translation into the SAT-problem we have used a novel technique for ruling out cycles in the SAT problem using chordal graphs. Existing work on chordality for expressing equality logic \cite{bryant-chordal} was the inspiration for this technique. Using chordal graphs makes the problems much smaller than directly ruling out cycles, while encoding the same restrictions. We believe that this technique is applicable in other problems using SAT-solvers as well.
 
 Furthermore, we have shown that expressing the problem as a SAT problem has the advantage that extra constraints can be added. We illustrated this with two possible properties of the resulting schedule that an attribute grammar programmer may want to influence. Even though this makes the scheduling problem potentially harder, as the algorithm is left fewer choices, the solution is found very fast in all practical cases we have tried.
 
