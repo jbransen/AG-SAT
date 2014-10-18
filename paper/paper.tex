@@ -295,7 +295,7 @@ In contrast to the previous optimisation, this algorithm does not find a global 
 \section{Discussion and Conclusion} \label{sect:conclusion}
 We have explained the difficulties in attribute grammar scheduling and shown how to solve this problem using a SAT-solver. The given approach has been implemented and tested on a full-scale compiler built using attribute grammars. Results show that the algorithm works much faster than other approaches.
 
-In the translation into the SAT-problem we have used a novel technique for ruling out cycles in the SAT problem using chordal graphs. This technique makes the problems much smaller than directly ruling out cycles, while encoding the same restrictions. We believe that this technique is applicable in other problems using SAT-solvers as well.
+In the translation into the SAT-problem we have used a novel technique for ruling out cycles in the SAT problem using chordal graphs. The technique was inspired by existing work on chordility for expressing equality logic \cite{bryant-chordal}. Using chordal graphs makes the problems much smaller than directly ruling out cycles, while encoding the same restrictions. We believe that this technique is applicable in other problems using SAT-solvers as well.
 
 Furthermore, we have shown that expressing the problem as a SAT problem has the advantage that extra constraints can be added. We illustrated this with two possible properties of the resulting schedule that an attribute grammar programmer may want to influence. Even though this makes the scheduling problem potentially harder, as the algorithm is left fewer choices, the solution is found very fast in all practical cases we have tried.
 
