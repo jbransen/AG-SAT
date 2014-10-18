@@ -116,18 +116,21 @@ The nonterminal dependency graphs and production dependency graphs are consisten
 
 \figref{fig:labval_bin_flow_induced} shows the production dependency graph of the production \emph{Bin} with a complete order on the attributes. In this case there is only a single nonterminal so both the parent and the child nodes have the same attribute order, made explicit by extra edges from the nonterminal dependency graph. Because this dependency graph is still cycle free after adding the edges for the complete order and the same holds for the \emph{Leaf} production, the order a2 $\rightarrow$ a4 $\rightarrow$ a1 $\rightarrow$ a3 is a valid schedule for the nonterminal \emph{Tree}.
 
+To find the total order we add edges to the nonterminal dependency graph and rely on the SAT-solver to determine their direction. Instead of adding an edge for all possible pairs of attributes it is sufficient to add an edge for all pairs of inherited and synthesized attributes.
+The order described by an assignment to these variables is not (always) total as there might be pairs of attributes, which attributes are either both inherited or both synthesized, without a relative ordering. This is not a problem as their evaluation order can be chosen arbitrarily\Thomas{Dit beschouw ik zelf als een belangrijk resultaat. Het is de uitkomst van het lange proces waarin ik geprobeerd heb de minimale definitie van het probleem van LOAG scheduling te geven. Maar om dit beter te kunnen uitleggen heb ik 'visits' nodig.}. 
+
 
 \section{Translation into SAT} \label{sect:translation}
 To represent the scheduling problem as a Boolean formula we introduce a variable for each edge, indicating the direction of the edge. The direct dependencies coming from the source code are constants, but for the rest of the edges the SAT-solver can decide on the direction. However, the encoding has been chosen in such way that a valid assignment of the variables corresponds to a valid schedule.
 
 Our algorithm has the following steps:
 \begin{enumerate}
-\item Construct a nonterminal dependency graph for each nonterminal
-\item Construct a production dependency graph for each production
+\item Construct a nonterminal dependency graph for each nonterminal and add an edge between all pairs of inherited and synthesized attributes
+\item Construct a production dependency graph for each production and add an edge for every direct dependency
 \item Make all graphs chordal
-\item Introduce a SAT variable for each edge in any of the graphs, where edges from a production dependency graph and the corresponding nonterminal dependency graph are shared, so are represented by the same variable
+\item Introduce a SAT variable for each edge in any of the graphs including the chords added in step 3. Variables of edges between attributes of the same nonterminal must be shared between nonterminal dependency graphs and production dependency graphs
 \item Set the value of all variables corresponding to direct dependencies
-\item Exclude all cycles of length three
+\item Exclude all cycles of length three by adding constraints
 \item Optionally add extra constraints for optimisations
 \end{enumerate}
 The first two steps have been explained in the previous sections. Step 3 is explained below, step 4 is trivial, and step 5 and 6 follow from the explanation below. Finally step 7 is explained in \sectref{sect:optimisations}.
@@ -234,7 +237,7 @@ In \tabref{tab:algo-comparison} we show the compilation times for the MainAG of 
   \label{tab:edgecomp}
 \end{table}
 
-As explained in \sectref{sect:chordalconstruct} we need to find an order in which to handle the vertices such that the resulting SAT problem is as small as possible. In \tabref{tab:edgecomp} we show the results of different heuristics for the MainAG of the UHC. In this table we use three different sets: $\mathcal{D}$ is the set of direct dependencies, $\mathcal{C}$ is the set of edges that are added to make the graph chordal and $\mathcal{S}$ is the set of other edges. For each of the sets we take only the edges in the neighbourhood of \emph{v} for comparison.
+As explained in \sectref{sect:chordalconstruct} we need to find an order in which to handle the vertices such that the resulting SAT problem is as small as possible. In \tabref{tab:edgecomp} we show the results of different heuristics for the MainAG of the UHC. In this table we use three different sets: $\mathcal{D}$ is the set of direct dependencies (step 2, Section \ref{sect:translation}), $\mathcal{C}$ is the set of edges that are added to make the graph chordal (step 3, Section \ref{sect:translation}) and $\mathcal{S}$ is the set of edge between all inherited and synthesized pairs (step 1, Section \ref{sect:translation}). For each of the sets we take only the edges in the neighbourhood of \emph{v} for comparison.
 
 \section{Optimisations} \label{sect:optimisations}
 We have shown that expressing the scheduling problem as a SAT problem and using an existing SAT-solver can improve the running time of the scheduling, but that is not the only advantage. In the SAT problem one can easily add extra constraints to further influence the resulting schedule. In \sectref{sect:minimising} and \sectref{sect:eagerattributes} we show two of such optimisations that are useful from an attribute grammar perspective. These optimisations have not been implemented in the release version of the UUAGC, but we have run preliminary experiments to verify that they work as expected.
