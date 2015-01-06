@@ -7,4 +7,6 @@ all:
 lhs2TeX:
 	lhs2TeX --poly paper.lhs -o paper.tex
 
+paper.zip:
+	zip paper.zip paper.tex loags.tex formats.tex biblio.bib diagrams/*
 
