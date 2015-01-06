@@ -8,7 +8,7 @@
 \input{./formats.tex}
 
 % Paper info
-\title{Linear Ordered Attribute Grammar scheduling using SAT-solving}
+\title{Linearly Ordered Attribute Grammar scheduling using SAT-solving}
 \author{Jeroen Bransen\inst{1}  \and L. Thomas van Binsbergen\inst{2,1} \and Koen Claessen\inst{3} \and Atze Dijkstra\inst{1}}
 \institute{Utrecht University, Utrecht, The Netherlands, \email{\{J.Bransen,atze\}@uu.nl}
 \and Royal Holloway, University of London, Egham, UK, \email{Thomas.VanBinsbergen.2014@live.rhul.ac.uk}
@@ -37,10 +37,10 @@
 Many computations over trees can be specified using attribute
 grammars. Compilers for attribute grammars need to find an evaluation
 order (or {\em schedule}) in order to generate efficient code. For the class
-of {\em linear ordered attribute grammars} such a schedule can be found
+of {\em linearly ordered attribute grammars} such a schedule can be found
 statically, but this problem is known to be NP-hard.
 
-In this paper, we show how to encode linear ordered attribute grammar
+In this paper, we show how to encode linearly ordered attribute grammar
 scheduling as a SAT-problem. For such grammars it is necessary to ensure that the dependency graph is cycle free, which we approach in a novel way by transforming the dependency graph to a chordal graph allowing the cycle freeness to be efficiently expressed and computed using SAT solvers.
 
 There are two main advantages to using a SAT-solver for scheduling:
@@ -58,10 +58,10 @@ Attribute Grammars \cite{knuth68} are a formalism for describing the semantics o
 
 An attribute grammar essentially describes computations over trees, also known as folds or catamorphisms. Although the attribute grammar defines exactly \emph{what} should be computed, it does not define \emph{when} values should be computed. It is therefore up to the attribute grammar compiler (the compiler that translates the attribute grammar definition into a runtime evaluator) to find an evaluation order. Such an evaluation order or schedule should satisfy the dependencies induced by the specification of attribute computations in the attribute grammar definition and must be found statically, which means that for the given grammar an evaluation order should be found such that for every finite abstract syntax tree of the grammar the evaluation order should compute all values in a finite number of steps. Specifically, no cyclic data dependencies may occur at runtime for any given parse tree.
 
-The class of \emph{ordered attribute grammars} \cite{kastens80} is a well-known subclass of attribute grammars for which a polynomial time scheduling algorithm exists. However, despite what the name suggests there exist attribute grammars for which a static evaluation order can be found that do not belong to the class of ordered attribute grammars. In our work on compiler construction we often encountered such grammars, giving rise to the need of other scheduling algorithms \cite{bransen2012,Binsbergen:2015}. We therefore look at the class of \emph{linear ordered attribute grammars} in this paper, which is the largest class of attribute grammars for which a static evaluation order can be found. The problem of statically finding such evaluation order is known to be NP-complete \cite{engelfriet82}.
+The class of \emph{ordered attribute grammars} \cite{kastens80} is a well-known subclass of attribute grammars for which a polynomial time scheduling algorithm exists. However, despite what the name suggests there exist attribute grammars for which a static evaluation order can be found that do not belong to the class of ordered attribute grammars. In our work on compiler construction we often encountered such grammars, giving rise to the need of other scheduling algorithms \cite{bransen2012,Binsbergen:2015}. We therefore look at the class of \emph{linearly ordered attribute grammars} in this paper, which is the largest class of attribute grammars for which a static evaluation order can be found. The problem of statically finding such evaluation order is known to be NP-complete \cite{engelfriet82}.
 
 \subsection{Summary}
-We solve the linear ordered attribute grammar scheduling problem by translating it into the Boolean satisfiability problem (SAT), the standard NP-complete problem \cite{Cook:1971}. Even though the worst case runtime of all known SAT-solving algorithms is exponential in the input size, many SAT-solvers work very well in practice \cite{sat-practice}. By translating into the SAT problem we can therefore use an efficient existing SAT-solver to solve our problem, and even benefit from future improvements in the SAT-community. In our implementation we use MiniSat\footnote{\url{http://minisat.se}} \cite{Een:2004}.
+We solve the linearly ordered attribute grammar scheduling problem by translating it into the Boolean satisfiability problem (SAT), the standard NP-complete problem \cite{Cook:1971}. Even though the worst case runtime of all known SAT-solving algorithms is exponential in the input size, many SAT-solvers work very well in practice \cite{sat-practice}. By translating into the SAT problem we can therefore use an efficient existing SAT-solver to solve our problem, and even benefit from future improvements in the SAT-community. In our implementation we use MiniSat\footnote{\url{http://minisat.se}} \cite{Een:2004}.
 
 The core of the scheduling problem consists of finding a total order on the nodes of a set of dependency graphs (directed acyclic graphs) such that all direct dependencies, which are coming from the input grammar, are satisfied. However, there is interplay between the different dependency graphs caused by the order that is found in one dependency graph resulting in indirect dependencies that need to be satisfied in another dependency graph. This interplay of dependencies, which is explained later in detail, is what makes the problem hard.
 
@@ -72,13 +72,13 @@ Apart from the fact that this translation into the SAT problem helps in efficien
 \subsection{Overview}
 In this paper we make the following main contributions:
 \begin{itemize}
-\item We show how to encode the problem of scheduling linear ordered attribute grammars as a SAT problem
+\item We show how to encode the problem of scheduling linearly ordered attribute grammars as a SAT problem
 \item We show that chordal graphs can be used to encode cycle-freeness in SAT problems
 \item We show how certain attribute grammar optimisations can be encoded as part of the formulation of the SAT problem
 \end{itemize}
 Furthermore, we have implemented the described techniques in the UUAGC\footnote{\url{http://www.cs.uu.nl/wiki/HUT/AttributeGrammarSystem}} \cite{combinator-languages} and show that the technique works well in practice for the UHC.
 
-The outline of the paper is as follows. We start in \sectref{sect:ag} and \sectref{sect:loag} by explaining linear ordered attribute grammars and the difficulties in scheduling in more detail. We then describe the translation into the SAT problem in \sectref{sect:translation} and show the effectiveness of our approach in \sectref{sect:results}. In \sectref{sect:optimisations} we describe the two attribute grammar optimisations and finally in \sectref{sect:conclusion} we discuss some problems and conclude.
+The outline of the paper is as follows. We start in \sectref{sect:ag} and \sectref{sect:loag} by explaining linearly ordered attribute grammars and the difficulties in scheduling in more detail. We then describe the translation into the SAT problem in \sectref{sect:translation} and show the effectiveness of our approach in \sectref{sect:results}. In \sectref{sect:optimisations} we describe the two attribute grammar optimisations and finally in \sectref{sect:conclusion} we discuss some problems and conclude.
 
 
 \section{Attribute Grammars} \label{sect:ag}
@@ -97,16 +97,16 @@ The figure shows \emph{production dependency graphs}, one for every production o
 
 Although we talk about dependency graphs in the context of scheduling, we actually draw the edges in the other direction. The edges in the picture represent data flow, which from an attribute grammar perspective is much more intuitive. For example, in the \emph{Bin} production the attribute a1 of the child \emph{r} is computed from a1 from the parent and a3 from the child \emph{l}. The edges are thus always directed from an input attribute to an output attribute, and the actual dependency graph can be obtained by reversing all edges. The edges that follow directly from the source code are the \emph{direct dependencies}.
 
-\section{Linear Ordered Attribute Grammars} \label{sect:loag}
+\section{Linearly Ordered Attribute Grammars} \label{sect:loag}
 Given an attribute grammar definition the attribute grammar compiler generates a runtime evaluator that takes an abstract syntax tree as input and computes all attribute values. There are two approaches for doing the scheduling: at runtime (dynamic) or at compile time (static).
 
 For dynamic scheduling one could rely on existing machinery for lazy evaluation, for example in Haskell, which is the approach taken by \cite{saraiva99}. There the attribute grammar definitions are translated into lazy Haskell functions in a straightforward way by producing functions that take the inherited attributes as argument and return the synthesized attributes. Whenever an inherited attribute (indirectly) depends on the value of a synthesized attribute, this means the function has a cyclic definition, which is no problem for languages with lazy semantics, and can actually result in efficient code \cite{Bird:1984}.
 
 There are two problems with the dynamic scheduling. First, whenever the attribute grammar contains a true cyclic attribute definition, the evaluator enters an infinite loop at runtime. However, these cycles could have been detected at compile time! Furthermore, the code needs lazy functions while with the static scheduling strict evaluators can be generated, leading to more efficient code in practice.
 
-For static scheduling efficient evaluators can be generated, but the problem is that static scheduling is hard. In \cite{kastens80} a polynomial time algorithm is given for static scheduling of the class of ordered attribute grammars, but unfortunately we often encounter attribute grammars outside of that class. All our attribute grammars do however fall in the class of linear ordered attribute grammars, which is the largest class of attribute grammars for which a static schedule can be found. Although the scheduling is NP-complete, we have implemented a backtracking algorithm in earlier work \cite{Binsbergen:2015} that is feasible in practice. However, in this paper we show that we can do better by creating an algorithm that is faster and allows for different optimisations on the resulting schedule.
+For static scheduling efficient evaluators can be generated, but the problem is that static scheduling is hard. In \cite{kastens80} a polynomial time algorithm is given for static scheduling of the class of ordered attribute grammars, but unfortunately we often encounter attribute grammars outside of that class. All our attribute grammars do however fall in the class of linearly ordered attribute grammars, which is the largest class of attribute grammars for which a static schedule can be found. Although the scheduling is NP-complete, we have implemented a backtracking algorithm in earlier work \cite{Binsbergen:2015} that is feasible in practice. However, in this paper we show that we can do better by creating an algorithm that is faster and allows for different optimisations on the resulting schedule.
 
-Conceptually, static scheduling of linear ordered attribute grammars is not very complex. For each nonterminal a total order should be found on its attributes, such that all production dependency graphs all cycle free. However, because a nonterminal can have multiple productions and a production can have children of different types, choices made on the order of attributes of one nonterminal can influence the order of attributes in another nonterminal.
+Conceptually, static scheduling of linearly ordered attribute grammars is not very complex. For each nonterminal a total order should be found on its attributes, such that all production dependency graphs all cycle free. However, because a nonterminal can have multiple productions and a production can have children of different types, choices made on the order of attributes of one nonterminal can influence the order of attributes in another nonterminal.
 
 In order to encode this we also construct a \emph{nonterminal dependency graph}. This graph contains all attributes that are defined for the corresponding nonterminal and the edges in this graph must define a total order on the attributes. Furthermore, the edges in the nonterminal dependency graph should agree with the (indirect) dependencies from the production dependency graphs such that no cycles exist.
 
@@ -190,8 +190,8 @@ The UHC is compiled using the Utrecht University Attribute Grammar Compiler (UUA
 
 \begin{itemize}
 \item \emph{Kastens}: the algorithm from \cite{kastens80} which only works for ordered attribute grammars, of which MainAG is not a member. However, with extra manual annotations this algorithm can generate a schedule, which is the approach used previously. However, as writing these annotation is hard an error-prone, this is not an optimal work flow.
-\item \emph{Kennedy-Warren}: The algorithm from \cite{kennedywarren76} that we have implemented in the UUAGC before \cite{bransen2012} is an algorithm that schedules all absolutely noncircular attribute grammars, an even larger class than the linear ordered attribute grammars. However, the scheduling is not completely static so the generated evaluator also does part of the scheduling at runtime. 
-\item \emph{LOAG-backtrack}: we have also implemented a backtracking algorithm for linear ordered attribute grammars \cite{Binsbergen:2015}, based on Kastens' algorithm. This algorithm solves exactly the same scheduling problem as the SAT approach described in this paper and uses exponential time in worst case.
+\item \emph{Kennedy-Warren}: The algorithm from \cite{kennedywarren76} that we have implemented in the UUAGC before \cite{bransen2012} is an algorithm that schedules all absolutely noncircular attribute grammars, an even larger class than the linearly ordered attribute grammars. However, the scheduling is not completely static so the generated evaluator also does part of the scheduling at runtime. 
+\item \emph{LOAG-backtrack}: we have also implemented a backtracking algorithm for linearly ordered attribute grammars \cite{Binsbergen:2015}, based on Kastens' algorithm. This algorithm solves exactly the same scheduling problem as the SAT approach described in this paper and uses exponential time in worst case.
 \end{itemize} 
 
 \begin{table}
