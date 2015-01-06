@@ -290,7 +290,7 @@ To compute this, we introduce a SAT variable $E(a)$ for every attribute $a$, tha
 
 Finally, we use a counting network for all literals $E(a)$, and ask for a solution that minimises the number of literals in $E$.
 
-We have run this algorithm on ever output attribute of the top-level nonterminal of all our examples. For our largest grammar, the hardest output to compute took 1 second. So, while a harder optimisation than the previous one, it is very doable in practice.
+We have run this algorithm on every output attribute of the top-level nonterminal of all our examples. For our largest grammar, the hardest output to compute took 1 second. So, while a harder optimisation than the previous one, it is very doable in practice.
 
 One can imagine other variants of this optimisation, where we have a set of eager attributes, or a combination of eager and late attributes. At the time of the writing of this paper, we have not experimented with such variants yet.
 
