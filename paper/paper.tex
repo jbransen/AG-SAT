@@ -11,7 +11,7 @@
 \title{Linearly Ordered Attribute Grammar scheduling using SAT-solving}
 \author{Jeroen Bransen\inst{1}  \and L. Thomas van Binsbergen\inst{2,1} \and Koen Claessen\inst{3} \and Atze Dijkstra\inst{1}}
 \institute{Utrecht University, Utrecht, The Netherlands, \email{\{J.Bransen,atze\}@uu.nl}
-\and Royal Holloway, University of London, Egham, UK, \email{Thomas.VanBinsbergen.2014@live.rhul.ac.uk}
+\and Royal Holloway, University of London, Egham, UK, \email{ltvanbinsbergen@acm.org}
 \and Chalmers University of Technology, Gothenburg, Sweden, \email{koen@chalmers.se}}
 
 % Wat handige shortcuts
@@ -147,7 +147,7 @@ In our case the graphs are directed, but we can still apply the same trick! In \
 There are several algorithms for making a graph chordal. We use an algorithm based on the following alternative definition of a chordal graph:
 
 \begin{definition}
-An undirected graph is \emph{chordal} if and only if it has a 
+An undirected graph $G$ is \emph{chordal} if and only if it has a 
 perfect elimination order. A perfect elimination order is an
 ordering $v_1,\ldots,v_n$ of the vertices of $G$ such that in the graph
 $G[v_1,\ldots,v_i]$, $\univ{i}{1 \leq i \leq n}$, the vertex $v_i$ is 
@@ -175,7 +175,7 @@ From this definition we can construct the following algorithm for making a graph
 One important open question in this algorithm is the order in which the vertices should be chosen. In \sectref{sect:heuristics} we show the results for several heuristics that we have implemented and tried on the UHC. We would like to remark that regardless of the heuristic used, this approach always leads to much smaller SAT problems than encoding transitivity in the SAT problem for ruling out cycles.
 
 \subsection{Finding the schedule}
-When the constructed Boolean formula is given to the SAT-solver, the result is either that the formula is not satisfiable, meaning that no schedule has been found, of satisfiable, meaning that there is a schedule. It is not hard to see that the formula is satisfiable if and only if there exists a valid schedule for the given attribute grammar definition, and in this paper we give no formal proof of this claim.
+When the constructed Boolean formula is given to the SAT-solver, the result is either that the formula is not satisfiable, meaning that no schedule can been found, or satisfiable, meaning that there is a schedule. It is not hard to see that the formula is satisfiable if and only if there exists a valid schedule for the given attribute grammar definition, and in this paper we give no formal proof of this claim.
 
 In the case where the formula is satisfiable, we obviously want to find the result. From the SAT solver we can ask for the truth value of each variable in the solution, so when our algorithm keeps the connection between edges and variables we can complete our directed graph and trivially find the complete order for all attributes from that. The constraints guarantee that this graph contains no cycles.
 
@@ -192,7 +192,7 @@ The UHC is compiled using the Utrecht University Attribute Grammar Compiler (UUA
 \begin{itemize}
 \item \emph{Kastens}: the algorithm from \cite{kastens80} which only works for ordered attribute grammars, of which MainAG is not a member. However, with extra manual annotations this algorithm can generate a schedule, which is the approach used previously. However, as writing these annotation is hard and error-prone, this is not an optimal work flow.
 \item \emph{Kennedy-Warren}: The algorithm from \cite{kennedywarren76} that we have implemented in the UUAGC before \cite{bransen2012} is an algorithm that schedules all absolutely noncircular attribute grammars, an even larger class than the linearly ordered attribute grammars. However, the scheduling is not completely static so the generated evaluator also does part of the scheduling at runtime. 
-\item \emph{LOAG-backtrack}: we have also implemented a backtracking algorithm for linearly ordered attribute grammars \cite{Binsbergen:2015}, based on Kastens' algorithm. This algorithm solves exactly the same scheduling problem as the SAT approach described in this paper and uses exponential time in worst case.
+\item \emph{LOAG-backtrack}: we have also implemented a backtracking algorithm for linearly ordered attribute grammars \cite{Binsbergen:2015}, based on Kastens' algorithm. This algorithm solves exactly the same scheduling problem as the SAT approach described in this paper and uses exponential time in worst case. In case of the \emph{MainAG} no backtracking is required to find a schedule.
 \end{itemize} 
 
 \begin{table}
@@ -202,7 +202,7 @@ The UHC is compiled using the Utrecht University Attribute Grammar Compiler (UUA
       \hline
       Kastens'                &   Y           &   17s \\
       Kennedy-Warren  &   N           &   33s \\
-      LOAG-backtrack  &   N           &   36s \\
+      LOAG-backtrack  &   N           &   13s \\
       LOAG-SAT           &   N           &   9s \\
     \end{tabular}
   \end{center}
@@ -210,7 +210,7 @@ The UHC is compiled using the Utrecht University Attribute Grammar Compiler (UUA
   \label{tab:algo-comparison}
 \end{table}
 
-In \tabref{tab:algo-comparison} we show the compilation times for the MainAG of the UHC for each of the four different algorithms. All times include parsing of the attribute grammar description and code generation, which is what takes most time in the SAT approach. The SAT-solver takes less than a second to find a solution.
+In \tabref{tab:algo-comparison} we show the compilation times for the MainAG of the UHC for each of the four different algorithms. All times include parsing of the attribute grammar description, code generation and adding chords, which is what takes most time in the SAT approach. The SAT-solver takes less than a second to find a solution.
 
 \subsection{Chordal graph heuristics} \label{sect:heuristics}
 \begin{table}
