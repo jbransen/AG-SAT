@@ -197,13 +197,17 @@ The UHC is compiled using the Utrecht University Attribute Grammar Compiler (UUA
 
 \begin{table}
   \begin{center}
-    \begin{tabular}{l || c || r}
-      Algorithm   &   Manual annotations   &  Compile time MainAG \\
+    \begin{tabular}{l || c || r || r || r || r}
+      Algorithm   &   Kastens' & Kennedy-Warren & LOAG-backtrack & LOAG-SAT\\
       \hline
-      Kastens'                &   Y           &   17s \\
-      Kennedy-Warren  &   N           &   33s \\
-      LOAG-backtrack  &   N           &   13s \\
-      LOAG-SAT           &   N           &   9s \\
+      UHC's MainAG          &   -       & 33s   & 13s   & 9s    \\
+      Asil Test             &   -       & 1.8s  & 4.4s  & 3.4s  \\
+      Asil ByteCode         &   -       & 0.6s  & 29.4s & 2.8s  \\
+      Asil PrettyTree       &   -       & 390ms & 536ms & 585ms \\
+      Asil InsertLabels     &   -       & 314ms & 440ms & 452ms \\
+      UUAGC's CodeGeneration&   -       & 348ms & 580ms & 382ms \\
+      5 pigeonholes         &   -       & 107ms & 1970ms& 191ms \\ 
+      Helium's TS\_Analyse  &   190ms   & 226ms & 235ms & 278ms \\
     \end{tabular}
   \end{center}
   \caption{Comparison of the four scheduling algorithms}
