@@ -102,7 +102,7 @@ Given an attribute grammar definition the attribute grammar compiler generates a
 
 For dynamic scheduling one could rely on existing machinery for lazy evaluation, for example in Haskell, which is the approach taken by \cite{saraiva99}. There the attribute grammar definitions are translated into lazy Haskell functions in a straightforward way by producing functions that take the inherited attributes as argument and return the synthesized attributes. Whenever an inherited attribute (indirectly) depends on the value of a synthesized attribute, this means the function has a cyclic definition, which is no problem for languages with lazy semantics, and can actually result in efficient code \cite{Bird:1984}.
 
-There are two problems with the dynamic scheduling. First, whenever the attribute grammar contains a true cyclic attribute definition, the evaluator enters an infinite loop at runtime. However, these cycles could have been detected at compile time! Furthermore, the code needs lazy functions while with the static scheduling strict evaluators can be generated, leading to more efficient code in practice.
+There are two problems with dynamic scheduling. First, whenever the attribute grammar contains a true cyclic definition, the evaluator enters an infinite loop at runtime. However, these cycles could have been detected at compile time! Furthermore, the code needs lazy functions while with the static scheduling strict evaluators can be generated, leading to more efficient code in practice.
 
 For static scheduling efficient evaluators can be generated, but the problem is that static scheduling is hard. In \cite{kastens80} a polynomial time algorithm is given for static scheduling of the class of ordered attribute grammars, but unfortunately we often encounter attribute grammars outside of that class. All our attribute grammars do however fall in the class of linearly ordered attribute grammars, which is the largest class of attribute grammars for which a static schedule can be found. Although the scheduling is NP-complete, we have implemented a backtracking algorithm in earlier work \cite{Binsbergen:2015} that is feasible in practice. However, in this paper we show that we can do better by creating an algorithm that is faster and allows for different optimisations on the resulting schedule.
 
@@ -185,12 +185,12 @@ One important implementation detail is that of shared edges. As explained, the n
 However, as we also make both graphs chordal, the edges added to make the graphs chordal can also be shared. This is exactly what our implementation does, such that the SAT problem is kept as small as possible. The implementation is therefore slightly more complicated than explained in the previous sections.
 
 \section{Empirical results} \label{sect:results}
-We use the Utrecht Haskell Compiler (UHC) \cite{Dijkstra:2009} as a test case for our work. The source code of the UHC consists of several attribute grammar definitions together with Haskell code. The biggest attribute grammar in the UHC, called \emph{MainAG}, consists of 30 nonterminals, 134 productions, 1332 attributes (44.4 per nonterminal) and 9766 dependencies and is the biggest attribute grammar we know of.
+We use the Utrecht Haskell Compiler (UHC) \cite{Dijkstra:2009} as the main test case for our work. The source code of the UHC consists of several attribute grammar definitions together with Haskell code. The biggest attribute grammar in the UHC, called \emph{MainAG}, consists of 30 nonterminals, 134 productions, 1332 attributes (44.4 per nonterminal) and 9766 dependencies and is the biggest attribute grammar we know of.
 
-The UHC is compiled using the Utrecht University Attribute Grammar Compiler (UUAGC) \cite{combinator-languages}, in which we have implemented our approach. Apart from our SAT approach there are three other scheduling algorithms that have been implemented to which we can compare our approach:
+We have compiled several attribute grammars using the Utrecht University Attribute Grammar Compiler (UUAGC) \cite{combinator-languages}, in which we have implemented our approach. Apart from our SAT approach there are three other scheduling algorithms that have been implemented to which we can compare our approach:
 
 \begin{itemize}
-\item \emph{Kastens}: the algorithm from \cite{kastens80} which only works for ordered attribute grammars, of which MainAG is not a member. However, with extra manual annotations this algorithm can generate a schedule, which is the approach used previously. However, as writing these annotation is hard and error-prone, this is not an optimal work flow.
+\item \emph{Kastens}: the algorithm from \cite{kastens80} which only works for ordered attribute grammars, of which most examples are not a member.
 \item \emph{Kennedy-Warren}: The algorithm from \cite{kennedywarren76} that we have implemented in the UUAGC before \cite{bransen2012} is an algorithm that schedules all absolutely noncircular attribute grammars, an even larger class than the linearly ordered attribute grammars. However, the scheduling is not completely static so the generated evaluator also does part of the scheduling at runtime. 
 \item \emph{LOAG-backtrack}: we have also implemented a backtracking algorithm for linearly ordered attribute grammars \cite{Binsbergen:2015}, based on Kastens' algorithm. This algorithm solves exactly the same scheduling problem as the SAT approach described in this paper and uses exponential time in worst case. In case of the \emph{MainAG} no backtracking is required to find a schedule.
 \end{itemize} 
@@ -200,21 +200,23 @@ The UHC is compiled using the Utrecht University Attribute Grammar Compiler (UUA
     \begin{tabular}{l || c || r || r || r || r}
       Algorithm   &   Kastens' & Kennedy-Warren & LOAG-backtrack & LOAG-SAT\\
       \hline
-      UHC's MainAG          &   -       & 33s   & 13s   & 9s    \\
+      UHC MainAG          &   -       & 33s   & 13s   & 9s    \\
       Asil Test             &   -       & 1.8s  & 4.4s  & 3.4s  \\
       Asil ByteCode         &   -       & 0.6s  & 29.4s & 2.8s  \\
       Asil PrettyTree       &   -       & 390ms & 536ms & 585ms \\
       Asil InsertLabels     &   -       & 314ms & 440ms & 452ms \\
-      UUAGC's CodeGeneration&   -       & 348ms & 580ms & 382ms \\
-      5 pigeonholes         &   -       & 107ms & 1970ms& 191ms \\ 
-      Helium's TS\_Analyse  &   190ms   & 226ms & 235ms & 278ms \\
+      UUAGC CodeGeneration&   -       & 348ms & 580ms & 382ms \\
+      Pigeonhole principle         &   -       & 107ms & 1970ms& 191ms \\ 
+      Helium TS\_Analyse  &   190ms   & 226ms & 235ms & 278ms \\
     \end{tabular}
   \end{center}
   \caption{Comparison of the four scheduling algorithms}
   \label{tab:algo-comparison}
 \end{table}
 
-In \tabref{tab:algo-comparison} we show the compilation times for the MainAG of the UHC for each of the four different algorithms. All times include parsing of the attribute grammar description, code generation and adding chords, which is what takes most time in the SAT approach. The SAT-solver takes less than a second to find a solution.
+In \tabref{tab:algo-comparison} we show the compilation times for the examples for the four different algorithms. All times include parsing of the attribute grammar description, code generation and adding chords, which is what takes most time in the SAT approach. The SAT-solver takes less than a second to find a solution in all cases.
+
+The other test cases we have used for testing are the UUAGC itself, \emph{Asil} \cite{asil} which is a byte code instrumenter, the \emph{Helium} compiler \cite{helium} which is a Haskell compiler specifically intended for students learning Haskell, and an encoding of the Pigeonhole principle. We removed one clause in such way there exists exactly one valid schedule, resulting in an artificial attribute grammar that is hard to schedule.
 
 \subsection{Chordal graph heuristics} \label{sect:heuristics}
 \begin{table}
