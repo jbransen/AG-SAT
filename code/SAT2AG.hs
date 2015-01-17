@@ -91,5 +91,6 @@ genAll cnf = genVars cnf >> genSat cnf >> genTop cnf
 
 main :: IO ()
 main = do
-  [n] <- getArgs
-  genAll $ pidgeon $ read n
+  args <- getArgs
+  let (n:ns) = map read args
+  genAll $ map snd $ filter (\(i,c) -> i `notElem` ns) $ zip [1..] $ pidgeon n
