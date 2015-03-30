@@ -1,0 +1,214 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+\definecolor{RHUL-light}{HTML}{eb641e}
+\definecolor{RHUL-dark}{HTML}{202a30}
+\setbeamercolor{structure}{fg=RHUL-light!90!RHUL-dark}
+
+\title{Linearly Ordered Attribute Grammar scheduling using SAT-solving}
+
+\begin{document}
+
+\begin{frame}
+    \maketitle
+\end{frame}
+
+\begin{frame}
+    \frametitle{Attribute Grammars}
+    \begin{itemize}
+        \item Attribute Grammars describe computations over trees.
+        \item Useful in compiler construction, e.g. for:\\
+                Code generation, static analysis, semantic evaluation.
+        \item An AG compiler generates an evaluator from a description.
+        \item Scheduling is required to generate a \emph{strict} evaluator.
+        \item This scheduling problem is NP-hard.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Compile-time scheduling}
+    \begin{itemize}
+        \item No compile-time scheduling: 
+            \begin{itemize}
+                \item Generate lazy code.
+            \end{itemize}
+        \item Some compile-time scheduling: 
+            \begin{itemize}
+                \item Find multiple schedules, covering all possible trees.
+                \item The actual schedule depends on the input tree.
+                \item Absolutely Non-Circular Attribute Grammars (ANCAGs).
+                \item Kennedy-Warren algorithm.
+            \end{itemize}
+        \item Full compile-time scheduling:
+            \begin{itemize}
+                \item Find a single evaluation order.
+                \item It needs to `work' for all possible trees.
+                \item Linearly Ordered Attribute Grammars (LOAGs).
+                \item Kastens' algorithm (schedules subclass OAG).
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Motivation}
+    \begin{itemize}
+        \item Many tools at Utrecht University are developed using AGs.
+        \item Large projects require efficient and strict code.
+        \item Main motivation is the Utrecht Haskell Compiler.         
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Scheduling the Utrecht Haskell Compiler (UHC)}
+    \begin{itemize}
+        \item UHC is partly generated from of a large number of AGs.
+        \item The ``main AG'' is large indeed:
+         \begin{itemize}
+            \item 30 non-terminals
+            \item 134 productions
+            \item 1332 attributes (44.4 per non-terminal!)
+            \item 9766 dependencies
+         \end{itemize} 
+        \item Kastens' algorithm does not find a static evaluation order for the main AG.
+        \item We know at least one exists, as Kastens' algorithm can be `helped' to find one
+                using 24 \emph{augmenting dependencies}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Overview}
+    \begin{itemize}
+        \item LOAG scheduling problem.
+        \item SAT formulation.
+        \item Constraint generation using chordal graphs.
+    \end{itemize}
+\end{frame}
+
+\section{LOAG scheduling problem}
+\begin{frame}
+    \frametitle{AG descriptions}
+    \begin{itemize}
+        \item An AG descriptions contains three components:
+        \begin{enumerate}
+            \item A context-free grammar (describing all possible input trees).
+            \item A set of attribute declarations (for every non-terminal).
+            \item A definition for every attribute (in each context it appears).
+        \end{enumerate}
+        \item From the AG description, the AG compiler obtains:
+        \begin{enumerate}
+            \item A dependency graph for every:
+                \begin{itemize} 
+                    \item Non-terminal
+                    \item Production.
+                \end{itemize}
+        \end{enumerate}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Non-terminal dependency graphs}
+    \begin{itemize}
+        \item The non-terminal dependency graph for $X$\\
+                contains all attributes of $X$ as vertices.
+    \end{itemize}
+    \begin{figure}
+
+    \caption{non-terminal dependency graph}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Production dependency graph}
+    \begin{itemize}
+        \only<1>{
+        \item The production graph for $X_0 ::= \tau_0X_1\ldots\tau_{k-1}X_k\tau_k$\\
+                has $X_0$ as parent and $X_1,\ldots,X_k$ as children.
+        \item $X_0, \ldots, X_k$ are \emph{non-terminal occurrences}.
+        \item $\tau_0,\ldots,\tau_k$ are \emph{terminals} (not in the graph).
+        }
+        \only<2>{
+        \item The graph contains all attributes of $X_0,\ldots,X_k$ as vertices.
+        \item Attributes in the production dependency graph are called \emph{attribute
+                occurrences}. 
+        }
+    \end{itemize}
+    \begin{figure}
+
+        \caption{Production graph first without then with attribute occurrences}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Direct dependencies}
+    \begin{itemize}
+        \item From the AG description \emph{direct dependencies} are obtained.
+        \item If attribute $a$ is used in the definition of $b$, then $a\rightarrow b$.
+    \end{itemize}
+    \begin{figure}
+    
+        \caption{Example with direct dependencies}
+    \end{figure}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{LOAG (alternative 1)}
+    \begin{itemize}
+        \item Can we find a linear order for every production graph,
+              such that the relative ordering for all occurrences of the same
+                non-terminal are equal?
+    \end{itemize}
+    \begin{figure}
+        \caption{Working order, invalid order}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{LOAG (alternative 2)}
+    \begin{itemize}
+        \item Can we find a linear order for every non-terminal graph,
+                such that if we assign this order to all non-terminal occurrences,\\
+                the production graphs remain acyclic?
+        \item Given such linear orders and the direct dependencies,\\
+                 we can find linear orders for the productions.
+    \end{itemize}
+\end{frame}
+
+\section{SAT formulation}
+\begin{frame}
+    \frametitle{Design space}
+    \begin{itemize}
+        \item Let a variable correspond to an undirected edge in the graphs.
+        \item An assignment to that variable determines direction.
+        \item By sharing variables we enforce the same relative ordering for
+                occurrences of the same non-terminal.
+        \item Formulation:
+        \begin{itemize}
+            \item Which undirected edges to add to which graphs?
+            \item How can constraints express cycle-freeness?
+        \end{itemize}
+        \item A satisfying assignment yields an orientation.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Naive attempt}
+    \begin{itemize}
+        \item Add every possible undirected edge to every production graph.
+        \item Fix the assignment for edges corresponding to direct dependencies.
+        \item Add transitivity constraints.
+        \item Note: This corresponds directly to finding a linear order on every
+                production graph, with the complication that there are shared variables.
+    \end{itemize}
+\end{frame}
+
+
+\section{Constraint generation}
+\begin{frame}
+    \frametitle{}
+    \begin{itemize}
+        \item
+    \end{itemize}
+\end{frame}
+
+
+\end{document}
