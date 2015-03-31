@@ -3,6 +3,10 @@
 \definecolor{RHUL-light}{HTML}{eb641e}
 \definecolor{RHUL-dark}{HTML}{202a30}
 \setbeamercolor{structure}{fg=RHUL-light!90!RHUL-dark}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows, automata}
+
+\input{../paper/formats.tex}
 
 \title{Linearly Ordered Attribute Grammar scheduling using SAT-solving}
 
@@ -107,34 +111,96 @@
 \begin{frame}
     \frametitle{Non-terminal dependency graphs}
     \begin{itemize}
-        \item The non-terminal dependency graph for $X$\\
-                contains all attributes of $X$ as vertices.
+        \item The non-terminal dependency graph for $X$ contains:
+            \begin{itemize}
+                \item The non-terminal $X$ 
+                \item All attributes of $X$ as vertices.
+            \end{itemize}
     \end{itemize}
     \begin{figure}
+        \begin{tikzpicture}
 
-    \caption{non-terminal dependency graph}
+\agbeginprod{0}{Tree}{lhs}{Tree}{10.2} %
+\agparent{0}{Tree}{lhs}{5.1}{} %
+\agparattr{0}{a1}{lhsIlab}{0.5}{Int}{outputstyle} %
+\agparattr{0}{a2}{lhsIvals}{2.3}{[Int]}{outputstyle} %
+\agparattr{0}{a3}{lhsSlab}{7.8999999999999995}{Int}{outputstyle} %
+\agparattr{0}{a4}{lhsSvals}{9.7}{[Int]}{outputstyle} %
+\agsibline{0}{lhsIlab}{lhsIvals} %
+\agsibline{0}{lhsIvals}{lhs} %
+\agsibline{0}{lhs}{lhsSlab} %
+\agsibline{0}{lhsSlab}{lhsSvals} %
+        \end{tikzpicture}
+    \caption{Non-terminal Tree for representing binary trees.}
     \end{figure}
 \end{frame}
 
 \begin{frame}
     \frametitle{Production dependency graph}
     \begin{itemize}
-        \only<1>{
-        \item The production graph for $X_0 ::= \tau_0X_1\ldots\tau_{k-1}X_k\tau_k$\\
-                has $X_0$ as parent and $X_1,\ldots,X_k$ as children.
-        \item $X_0, \ldots, X_k$ are \emph{non-terminal occurrences}.
-        \item $\tau_0,\ldots,\tau_k$ are \emph{terminals} (not in the graph).
-        }
-        \only<2>{
-        \item The graph contains all attributes of $X_0,\ldots,X_k$ as vertices.
-        \item Attributes in the production dependency graph are called \emph{attribute
-                occurrences}. 
+        \only<1,2>{
+        \item A production graph contains:
+            \begin{itemize} 
+                \item A parent node for the production's left-hand side ($\mathit{lhs}$). 
+                \item Children for all non-terminal occurrences of the right-hand side.
+                \item All attributes of the occurring non-terminals as vertices.
+            \end{itemize}
+        \item The children are named by the programmer ($l$ and $r$ for Bin).
+        \item The vertices are also called \emph{attribute occurrences}. 
         }
     \end{itemize}
+    \only<2>{
     \begin{figure}
-
-        \caption{Production graph first without then with attribute occurrences}
+        \begin{tikzpicture}
+\agbeginprod{0}{Leaf}{lhs}{Tree}{10.2} %
+\agparent{0}{Leaf}{lhs}{5.1}{lhs:Tree} %
+\agparattr{0}{a1}{lhsIlab}{0.5}{Int}{inputstyle} %
+\agparattr{0}{a2}{lhsIvals}{2.3}{[Int]}{inputstyle} %
+\agparattr{0}{a3}{lhsSlab}{7.8999999999999995}{Int}{outputstyle} %
+\agparattr{0}{a4}{lhsSvals}{9.7}{[Int]}{outputstyle} %
+\agsibline{0}{lhsIlab}{lhsIvals} %
+\agsibline{0}{lhsIvals}{lhs} %
+\agsibline{0}{lhs}{lhsSlab} %
+\agsibline{0}{lhsSlab}{lhsSvals} %
+\agendprod{0}{Leaf}{lhs}{Tree}{10.2} %
+            \end{tikzpicture}
     \end{figure}
+    }
+    \only<1>{
+    \begin{figure}
+        \begin{tikzpicture}
+\agbeginprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
+\agparent{0}{Bin}{lhs}{9.866666666666667}{lhs:Tree} %
+\agparattr{0}{a1}{lhsIlab}{5.433333333333334}{Int}{inputstyle} %
+\agparattr{0}{a2}{lhsIvals}{7.233333333333333}{[Int]}{inputstyle} %
+\agparattr{0}{a3}{lhsSlab}{12.5}{Int}{outputstyle} %
+\agparattr{0}{a4}{lhsSvals}{14.3}{[Int]}{outputstyle} %
+\agchldnonterm{0}{l}{l}{4.433333333333334}{Tree} %
+\agchldattr{0}{a1}{lIlab}{0.5}{Int}{outputstyle} %
+\agchldattr{0}{a2}{lIvals}{2.3}{[Int]}{outputstyle} %
+\agchldattr{0}{a3}{lSlab}{6.566666666666667}{Int}{inputstyle} %
+\agchldattr{0}{a4}{lSvals}{8.366666666666667}{[Int]}{inputstyle} %
+\agsibline{0}{lIlab}{lIvals} %
+\agsibline{0}{lIvals}{l} %
+\agsibline{0}{l}{lSlab} %
+\agsibline{0}{lSlab}{lSvals} %
+\agchldnonterm{0}{r}{r}{15.3}{Tree} %
+\agchldattr{0}{a1}{rIlab}{11.366666666666667}{Int}{outputstyle} %
+\agchldattr{0}{a2}{rIvals}{13.166666666666668}{[Int]}{outputstyle} %
+\agchldattr{0}{a3}{rSlab}{17.433333333333334}{Int}{inputstyle} %
+\agchldattr{0}{a4}{rSvals}{19.233333333333334}{[Int]}{inputstyle} %
+\agsibline{0}{rIlab}{rIvals} %
+\agsibline{0}{rIvals}{r} %
+\agsibline{0}{r}{rSlab} %
+\agsibline{0}{rSlab}{rSvals} %
+\agsibline{0}{lhsIlab}{lhsIvals} %
+\agsibline{0}{lhsIvals}{lhs} %
+\agsibline{0}{lhs}{lhsSlab} %
+\agsibline{0}{lhsSlab}{lhsSvals} %
+\agendprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
+        \end{tikzpicture}
+    \end{figure}
+    }
 \end{frame}
 
 \begin{frame}
@@ -144,66 +210,320 @@
         \item If attribute $a$ is used in the definition of $b$, then $a\rightarrow b$.
     \end{itemize}
     \begin{figure}
-    
-        \caption{Example with direct dependencies}
+        \begin{tikzpicture}
+\agbeginprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
+\agparent{0}{Bin}{lhs}{9.866666666666667}{lhs:Tree} %
+\agparattr{0}{a1}{lhsIlab}{5.433333333333334}{Int}{inputstyle} %
+\agparattr{0}{a2}{lhsIvals}{7.233333333333333}{[Int]}{inputstyle} %
+\agparattr{0}{a3}{lhsSlab}{12.5}{Int}{outputstyle} %
+\agparattr{0}{a4}{lhsSvals}{14.3}{[Int]}{outputstyle} %
+\agchldnonterm{0}{l}{l}{4.433333333333334}{Tree} %
+\agchldattr{0}{a1}{lIlab}{0.5}{Int}{outputstyle} %
+\agchldattr{0}{a2}{lIvals}{2.3}{[Int]}{outputstyle} %
+\agchldattr{0}{a3}{lSlab}{6.566666666666667}{Int}{inputstyle} %
+\agchldattr{0}{a4}{lSvals}{8.366666666666667}{[Int]}{inputstyle} %
+\agsibline{0}{lIlab}{lIvals} %
+\agsibline{0}{lIvals}{l} %
+\agsibline{0}{l}{lSlab} %
+\agsibline{0}{lSlab}{lSvals} %
+\agchldnonterm{0}{r}{r}{15.3}{Tree} %
+\agchldattr{0}{a1}{rIlab}{11.366666666666667}{Int}{outputstyle} %
+\agchldattr{0}{a2}{rIvals}{13.166666666666668}{[Int]}{outputstyle} %
+\agchldattr{0}{a3}{rSlab}{17.433333333333334}{Int}{inputstyle} %
+\agchldattr{0}{a4}{rSvals}{19.233333333333334}{[Int]}{inputstyle} %
+\agsibline{0}{rIlab}{rIvals} %
+\agsibline{0}{rIvals}{r} %
+\agsibline{0}{r}{rSlab} %
+\agsibline{0}{rSlab}{rSvals} %
+\agsibline{0}{lhsIlab}{lhsIvals} %
+\agsibline{0}{lhsIvals}{lhs} %
+\agsibline{0}{lhs}{lhsSlab} %
+\agsibline{0}{lhsSlab}{lhsSvals} %
+\agdeplinedownup{0}{lhsIlab}{lIlab}{horunknown} %
+\agdeplinedownup{0}{lhsIlab}{rIlab}{horunknown} %
+\agdeplinedownup{0}{lhsIvals}{rIvals}{horunknown} %
+\agdeplineupupctrl{0}{lSlab}{rIlab}{horleftright}{0.7} %
+\agdeplineupupctrl{0}{rSvals}{lIvals}{horrightleft}{0.8} %
+\agdeplineupdown{0}{rSlab}{lhsSlab}{horunknown} %
+\agdeplineupdown{0}{lSvals}{lhsSvals}{horunknown} %
+\agendprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %    
+        \end{tikzpicture}
     \end{figure}
 \end{frame}
 
 
 \begin{frame}
-    \frametitle{LOAG (alternative 1)}
+    \frametitle{LOAG scheduling}
     \begin{itemize}
-        \item Can we find a linear order for every production graph,
-              such that the relative ordering for all occurrences of the same
-                non-terminal are equal?
+        \item Find a linear order for every production graph, such that:
+            \begin{itemize}
+                \item The direct dependencies are `respected'.
+                \item The relative ordering for all occurrences of the same non-terminal are equal.
+            \end{itemize}
     \end{itemize}
     \begin{figure}
-        \caption{Working order, invalid order}
-    \end{figure}
-\end{frame}
+        \begin{tikzpicture}
+\agbeginprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
+\agparent{0}{Bin}{lhs}{9.866666666666667}{lhs:Tree} %
+\agparattr{0}{a1}{lhsIlab}{5.433333333333334}{Int}{inputstyle} %
+\agparattr{0}{a2}{lhsIvals}{7.233333333333333}{[Int]}{inputstyle} %
+\agparattr{0}{a3}{lhsSlab}{12.5}{Int}{outputstyle} %
+\agparattr{0}{a4}{lhsSvals}{14.3}{[Int]}{outputstyle} %
+\agchldnonterm{0}{l}{l}{4.433333333333334}{Tree} %
+\agchldattr{0}{a1}{lIlab}{0.5}{Int}{outputstyle} %
+\agchldattr{0}{a2}{lIvals}{2.3}{[Int]}{outputstyle} %
+\agchldattr{0}{a3}{lSlab}{6.566666666666667}{Int}{inputstyle} %
+\agchldattr{0}{a4}{lSvals}{8.366666666666667}{[Int]}{inputstyle} %
+\agsibline{0}{lIlab}{lIvals} %
+\agsibline{0}{lIvals}{l} %
+\agsibline{0}{l}{lSlab} %
+\agsibline{0}{lSlab}{lSvals} %
+\agchldnonterm{0}{r}{r}{15.3}{Tree} %
+\agchldattr{0}{a1}{rIlab}{11.366666666666667}{Int}{outputstyle} %
+\agchldattr{0}{a2}{rIvals}{13.166666666666668}{[Int]}{outputstyle} %
+\agchldattr{0}{a3}{rSlab}{17.433333333333334}{Int}{inputstyle} %
+\agchldattr{0}{a4}{rSvals}{19.233333333333334}{[Int]}{inputstyle} %
+\agsibline{0}{rIlab}{rIvals} %
+\agsibline{0}{rIvals}{r} %
+\agsibline{0}{r}{rSlab} %
+\agsibline{0}{rSlab}{rSvals} %
+\agsibline{0}{lhsIlab}{lhsIvals} %
+\agsibline{0}{lhsIvals}{lhs} %
+\agsibline{0}{lhs}{lhsSlab} %
+\agsibline{0}{lhsSlab}{lhsSvals} %
+\agdeplinedownup{0}{lhsIlab}{lIlab}{horunknown} %
+\agdeplinedownup{0}{lhsIlab}{rIlab}{horunknown} %
+\agdeplinedownup{0}{lhsIvals}{rIvals}{horunknown} %
+\agdeplineupupctrl{0}{lSlab}{rIlab}{horleftright}{0.7} %
+\agdeplineupupctrl{0}{rSvals}{lIvals}{horrightleft}{0.8} %
+\agdeplineupdown{0}{rSlab}{lhsSlab}{horunknown} %
+\agdeplineupdown{0}{lSvals}{lhsSvals}{horunknown} %
+\agendprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %    
 
-\begin{frame}
-    \frametitle{LOAG (alternative 2)}
-    \begin{itemize}
-        \item Can we find a linear order for every non-terminal graph,
-                such that if we assign this order to all non-terminal occurrences,\\
-                the production graphs remain acyclic?
-        \item Given such linear orders and the direct dependencies,\\
-                 we can find linear orders for the productions.
-    \end{itemize}
+        \only<1>{
+        \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{red}{1}}};
+        \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{red}{2}}};
+        \node[below=0mm of lIlab] {\scriptsize{\textcolor{red}{3}}};
+        \node[below=0mm of lIvals] {\scriptsize{\textcolor{red}{4}}};
+        \node[below=0mm of lSlab] {\scriptsize{\textcolor{red}{5}}};
+        \node[below=0mm of lSvals] {\scriptsize{\textcolor{red}{6}}};
+        \node[below=0mm of rIlab] {\scriptsize{\textcolor{red}{7}}};
+        \node[below=0mm of rIvals] {\scriptsize{\textcolor{red}{8}}};
+        \node[below=0mm of rSlab] {\scriptsize{\textcolor{red}{9}}};
+        \node[below=0mm of rSvals] {\scriptsize{\textcolor{red}{10}}};
+        \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{red}{11}}};
+        \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{red}{12}}};
+        }
+        \only<2>{
+        \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{red}{1}}};
+        \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{red}{2}}};
+        \node[below=0mm of lIlab] {\scriptsize{\textcolor{red}{3}}};
+        \node[below=0mm of lIvals] {\scriptsize{\textcolor{red}{9}}};
+        \node[below=0mm of lSlab] {\scriptsize{\textcolor{red}{4}}};
+        \node[below=0mm of lSvals] {\scriptsize{\textcolor{red}{10}}};
+        \node[below=0mm of rIlab] {\scriptsize{\textcolor{red}{5}}};
+        \node[below=0mm of rIvals] {\scriptsize{\textcolor{red}{7}}};
+        \node[below=0mm of rSlab] {\scriptsize{\textcolor{red}{6}}};
+        \node[below=0mm of rSvals] {\scriptsize{\textcolor{red}{8}}};
+        \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{red}{11}}};
+        \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{red}{12}}};
+        }
+        \only<3>{
+        \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{blue}{1}}};
+        \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{blue}{7}}};
+        \node[below=0mm of lIlab] {\scriptsize{\textcolor{blue}{2}}};
+        \node[below=0mm of lIvals] {\scriptsize{\textcolor{blue}{10}}};
+        \node[below=0mm of lSlab] {\scriptsize{\textcolor{blue}{3}}};
+        \node[below=0mm of lSvals] {\scriptsize{\textcolor{blue}{11}}};
+        \node[below=0mm of rIlab] {\scriptsize{\textcolor{blue}{4}}};
+        \node[below=0mm of rIvals] {\scriptsize{\textcolor{blue}{8}}};
+        \node[below=0mm of rSlab] {\scriptsize{\textcolor{blue}{5}}};
+        \node[below=0mm of rSvals] {\scriptsize{\textcolor{blue}{9}}};
+        \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{blue}{6}}};
+        \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{blue}{12}}};
+        }
+         \end{tikzpicture}
+        \only<1>{
+        \caption{Invalid schedule: $10 < 4$.}
+        }\only<2>{
+        \caption{Invalid schedule: $\mathit{lhs}$ has different order.}
+        }\only<3>{
+        \caption{Correct schedule.}
+        }
+    \end{figure}
 \end{frame}
 
 \section{SAT formulation}
 \begin{frame}
-    \frametitle{Design space}
+    \frametitle{Sat formulation}
     \begin{itemize}
-        \item Let a variable correspond to an undirected edge in the graphs.
+        \item Let a variable correspond to an undirected edge.
         \item An assignment to that variable determines direction.
         \item By sharing variables we enforce the same relative ordering for
                 occurrences of the same non-terminal.
-        \item Formulation:
-        \begin{itemize}
-            \item Which undirected edges to add to which graphs?
-            \item How can constraints express cycle-freeness?
-        \end{itemize}
-        \item A satisfying assignment yields an orientation.
+        \begin{figure}
+            \begin{tikzpicture}
+\agbeginprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
+\agparent{0}{Bin}{lhs}{9.866666666666667}{lhs:Tree} %
+\agparattr{0}{a1}{lhsIlab}{5.433333333333334}{Int}{inputstyle} %
+\agparattr{0}{a2}{lhsIvals}{7.233333333333333}{[Int]}{inputstyle} %
+\agparattr{0}{a3}{lhsSlab}{12.5}{Int}{outputstyle} %
+\agparattr{0}{a4}{lhsSvals}{14.3}{[Int]}{outputstyle} %
+\agchldnonterm{0}{l}{l}{4.433333333333334}{Tree} %
+\agchldattr{0}{a1}{lIlab}{0.5}{Int}{outputstyle} %
+\agchldattr{0}{a2}{lIvals}{2.3}{[Int]}{outputstyle} %
+\agchldattr{0}{a3}{lSlab}{6.566666666666667}{Int}{inputstyle} %
+\agchldattr{0}{a4}{lSvals}{8.366666666666667}{[Int]}{inputstyle} %
+\agsibline{0}{lIlab}{lIvals} %
+\agsibline{0}{lIvals}{l} %
+\agsibline{0}{l}{lSlab} %
+\agsibline{0}{lSlab}{lSvals} %
+\agchldnonterm{0}{r}{r}{15.3}{Tree} %
+\agchldattr{0}{a1}{rIlab}{11.366666666666667}{Int}{outputstyle} %
+\agchldattr{0}{a2}{rIvals}{13.166666666666668}{[Int]}{outputstyle} %
+\agchldattr{0}{a3}{rSlab}{17.433333333333334}{Int}{inputstyle} %
+\agchldattr{0}{a4}{rSvals}{19.233333333333334}{[Int]}{inputstyle} %
+\agsibline{0}{rIlab}{rIvals} %
+\agsibline{0}{rIvals}{r} %
+\agsibline{0}{r}{rSlab} %
+\agsibline{0}{rSlab}{rSvals} %
+\agsibline{0}{lhsIlab}{lhsIvals} %
+\agsibline{0}{lhsIvals}{lhs} %
+\agsibline{0}{lhs}{lhsSlab} %
+\agsibline{0}{lhsSlab}{lhsSvals} %
+\only<1>{
+\agvarlinedowndown{0}{lhsIlab}{lhsSlab}{1}{}{}{1}
+\agvarlinedowndown{0}{lIlab}{lSlab}{1}{}{}{1}
+\agvarlinedowndown{0}{rIlab}{rSlab}{1}{}{}{1}
+}
+\only<2>{
+\agvarlinedowndown{0}{lhsIvals}{lhsSlab}{1}{}{}{1}
+\agvarlinedowndown{0}{lIvals}{lSlab}{1}{}{}{1}
+\agvarlinedowndown{0}{rIvals}{rSlab}{1}{}{}{1}
+}
+\only<3>{
+\agvarlinedowndown{0}{lhsIvals}{lhsSvals}{1}{}{}{1}
+\agvarlinedowndown{0}{lIvals}{lSvals}{1}{}{}{1}
+\agvarlinedowndown{0}{rIvals}{rSvals}{1}{}{}{1}
+}
+\agendprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
+            \end{tikzpicture}
+        \end{figure}
+%        \item Formulation:
+%        \begin{itemize}
+%            \item Which undirected edges to add to which graphs?
+%            \item How can constraints express cycle-freeness?
+%        \end{itemize}
+%        \item A satisfying assignment yields an orientation.
     \end{itemize}
 \end{frame}
 
 \begin{frame}
-    \frametitle{Naive attempt}
+    \frametitle{First attempt}
     \begin{itemize}
         \item Add every possible undirected edge to every production graph.
         \item Fix the assignment for edges corresponding to direct dependencies.
         \item Add transitivity constraints.
-        \item Note: This corresponds directly to finding a linear order on every
-                production graph, with the complication that there are shared variables.
+        \item Problem: Number of constraints is cubic to the number of attribute occurrences.
+        \item Generating SAT-instance takes too long.
     \end{itemize}
 \end{frame}
 
+\begin{frame}
+    \frametitle{Solution}
+    \begin{itemize}
+        \item We decrease the number of constraints by:
+        \begin{enumerate}
+            \item Observing not all possible undirected edges have to be considered.
+            \item Constraining non-terminal subgraphs separately.
+            \item Triangulating the graphs,\\
+                    adding constraints to encountered triangles\\
+                    and removing vertices with a safe neighbourhood.
+            \begin{itemize}
+                \item Results in a smaller number of transitivity constraints.
+                \item Based on work by Bryant \& Velev on equality logic.
+            \end{itemize}
+            \item Improving the heuristic for triangulating the graphs.
+        \end{enumerate}
+        \item In a triangulated graph every cycle has length 3 or has a chord.
+    \end{itemize}
+\end{frame}
 
 \section{Constraint generation}
 \begin{frame}
+    \frametitle{Constraining triangles}
+    \begin{itemize}
+        \item In a triangulated graph it is enough to rule out all 3-cycles.
+    \end{itemize}
+    \begin{figure}
+        \begin{tikzpicture}
+        \node at (2,3.5)   [style=synnode] (n)    {n};
+        \node at (2,0.5)   [style=synnode] (s)   {s};
+        \node at (0,2)   [style=synnode] (w)   {w};
+        \node at (4,2)   [style=synnode] (e)   {e};
+
+        \draw[style=chord] (w) -- node[anchor=south]  {$\nearrow$}  (n) {};
+        \draw[style=chord] (s) -- node[anchor=east]  {$\nwarrow$}  (w) {};
+        \draw[style=chord] (e) -- node[anchor=north] {\only<4>{$\nearrow$}}  (s) {};
+        \draw[style=chord] (n) -- node[anchor=south] {\only<3>{$\nwarrow$}}  (e) {};
+        \draw[style=chord] (n) -- node[anchor=west]  {\only<2,3,4>{$\uparrow$}} (s);
+        \end{tikzpicture}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Triangulation}
+    \begin{figure}
+        \begin{tikzpicture}
+\agbeginprod{0}{Leaf}{lhs}{Tree}{10.2} %
+\agparent{0}{Leaf}{lhs}{5.1}{lhs:Tree} %
+\only<1-3,7>{\agparattr{0}{a1}{lhsIlab}{0.5}{Int}{inputstyle}}
+\only<1-5,7>{\agparattr{0}{a2}{lhsIvals}{2.3}{[Int]}{inputstyle}}
+\only<1-6,7>{ %
+\agparattr{0}{a3}{lhsSlab}{7.8999999999999995}{Int}{outputstyle} %
+\agparattr{0}{a4}{lhsSvals}{9.7}{[Int]}{outputstyle}} %
+\only<1-3,7>{\agsibline{0}{lhsIlab}{lhsIvals}}
+\only<1-5,7>{\agsibline{0}{lhsIvals}{lhs}}
+\only<1-6,7>{ %
+\agsibline{0}{lhs}{lhsSlab} %
+\agsibline{0}{lhsSlab}{lhsSvals}} %
+\only<1,7>{
+\agvarlinedowndown{0}{lhsIlab}{lhsSlab}{horunknown}{}{}{0.9} %
+\agvarlinedowndown{0}{lhsIlab}{lhsSvals}{horunknown}{}{}{1} %
+\agvarlineupup{0}{lhsIvals}{lhsSlab}{horunknown}{}{}{0.9} %
+\agvarlineupup{0}{lhsIvals}{lhsSvals}{horunknown}{}{}{1} %
+}\only<2,3>{
+\agvarlinedowndown{0}{lhsIlab}{lhsSlab}{horunknown}{blue}{}{0.9} %
+\agvarlinedowndown{0}{lhsIlab}{lhsSvals}{horunknown}{blue}{}{1} %
+}
+\only<3-6,7>{
+\agvarlineupup{0}{lhsSlab}{lhsSvals}{horunknown}{blue}{}{0.7}
+}\only<4>{
+\agvarlineupup{0}{lhsIvals}{lhsSlab}{horunknown}{}{}{0.9} %
+\agvarlineupup{0}{lhsIvals}{lhsSvals}{horunknown}{}{}{1} %
+}
+\only<5>{
+\agvarlineupup{0}{lhsIvals}{lhsSlab}{horunknown}{blue}{}{0.9} %
+\agvarlineupup{0}{lhsIvals}{lhsSvals}{horunknown}{blue}{}{1} %
+}
+\agendprod{0}{Leaf}{lhs}{Tree}{10.2} %
+        \end{tikzpicture}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Triangulation}
+    \begin{itemize}
+        \item A graph is triangulated by selecting \emph{some} vertex $v$,
+            \\and adding a chord for all pairs of unconnected neighbours.
+        \item We add 2 clauses for every encountered triangle, \\
+                ruling out both clockwise and counter-clockwise cycles.
+        \item After all neighbours are connected, $v$ is removed.
+        \item Based on the notion of a \emph{perfect elimination order}.
+        \item The order in which vertices are removed influences the number constraints and variables.
+        \item Which has a considerable impact on the time required to generate the SAT-instance.
+    \end{itemize}
+\end{frame}\begin{frame}
     \frametitle{}
     \begin{itemize}
         \item
