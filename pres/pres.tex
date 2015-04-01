@@ -4,11 +4,21 @@
 \definecolor{RHUL-dark}{HTML}{202a30}
 \setbeamercolor{structure}{fg=RHUL-light!90!RHUL-dark}
 \usepackage{tikz}
+\usepackage{subcaption}
 \usetikzlibrary{positioning,arrows, automata}
 
 \input{../paper/formats.tex}
 
 \title{Linearly Ordered Attribute Grammar scheduling using SAT-solving}
+\author[shortname]{Jeroen Bransen \inst{1} \and 
+                  \underline{L. Thomas van Binsbergen} \inst{2} \and\\ 
+                   Atze Dijkstra \inst{1} \and 
+                    Koen Claessen \inst{3}}
+\institute[shortinst]{
+    \inst{1} Utrecht University \and
+    \inst{2} Royal Holloway, University of London \and
+    \inst{3} Chalmers University of Technology}
+\date {TACAS 2015, ETAPS, London}
 
 \begin{document}
 
@@ -23,7 +33,7 @@
         \item Useful in compiler construction, e.g. for:\\
                 Code generation, static analysis, semantic evaluation.
         \item An AG compiler generates an evaluator from a description.
-        \item Scheduling is required to generate a \emph{strict} evaluator.
+        \item To generate a \emph{strict} evaluator scheduling is required.
         \item This scheduling problem is NP-hard.
     \end{itemize}
 \end{frame}
@@ -45,7 +55,7 @@
         \item Full compile-time scheduling:
             \begin{itemize}
                 \item Find a single evaluation order.
-                \item It needs to `work' for all possible trees.
+                \item It needs to be compatible with all possible trees.
                 \item Linearly Ordered Attribute Grammars (LOAGs).
                 \item Kastens' algorithm (schedules subclass OAG).
             \end{itemize}
@@ -102,7 +112,7 @@
             \item A dependency graph for every:
                 \begin{itemize} 
                     \item Non-terminal
-                    \item Production.
+                    \item Production
                 \end{itemize}
         \end{enumerate}
     \end{itemize}
@@ -258,8 +268,9 @@
     \begin{itemize}
         \item Find a linear order for every production graph, such that:
             \begin{itemize}
-                \item The direct dependencies are `respected'.
-                \item The relative ordering for all occurrences of the same non-terminal are equal.
+                \only<1>{\item[1)] The direct dependencies are `respected'.}
+                \only<2,3>{\item[2)] The relative ordering for all occurrences of the same non-terminal are equal.}
+                \only<2,3>{\item[] For example, $a3 < a2$ at $r$ $\Rightarrow$ $a3 < a2$ at $l$ and $\mathit{lhs}$, \\ but also at occurrences of Tree in other production graphs.}
             \end{itemize}
     \end{itemize}
     }
@@ -361,35 +372,7 @@
         \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{red}{11}}};
         \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{red}{12}}};
         }
-        \only<3>{
-        \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{blue}{1}}};
-        \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{blue}{7}}};
-        \node[below=0mm of lIlab] {\scriptsize{\textcolor{blue}{2}}};
-        \node[below=0mm of lIvals] {\scriptsize{\textcolor{blue}{10}}};
-        \node[below=0mm of lSlab] {\scriptsize{\textcolor{blue}{3}}};
-        \node[below=0mm of lSvals] {\scriptsize{\textcolor{blue}{11}}};
-        \node[below=0mm of rIlab] {\scriptsize{\textcolor{blue}{4}}};
-        \node[below=0mm of rIvals] {\scriptsize{\textcolor{blue}{8}}};
-        \node[below=0mm of rSlab] {\scriptsize{\textcolor{blue}{5}}};
-        \node[below=0mm of rSvals] {\scriptsize{\textcolor{blue}{9}}};
-        \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{blue}{6}}};
-        \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{blue}{12}}};
-        }
-        \only<4>{
-        \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{red}{1}}};
-        \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{red}{7}}};
-        \node[below=0mm of lIlab] {\scriptsize{\textcolor{red}{2}}};
-        \node[below=0mm of lIvals] {\scriptsize{\textcolor{red}{10}}};
-        \node[below=0mm of lSlab] {\scriptsize{\textcolor{red}{3}}};
-        \node[below=0mm of lSvals] {\scriptsize{\textcolor{red}{11}}};
-        \node[below=0mm of rIlab] {\scriptsize{\textcolor{red}{4}}};
-        \node[below=0mm of rIvals] {\scriptsize{\textcolor{red}{8}}};
-        \node[below=0mm of rSlab] {\scriptsize{\textcolor{red}{5}}};
-        \node[below=0mm of rSvals] {\scriptsize{\textcolor{red}{9}}};
-        \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{red}{6}}};
-        \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{red}{12}}};
-        }
-        \only<5>{
+        \only<3-5>{
         \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{blue}{1}}};
         \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{blue}{7}}};
         \node[below=0mm of lIlab] {\scriptsize{\textcolor{blue}{2}}};
@@ -428,7 +411,9 @@
         \item An assignment to that variable determines direction.
         \item By sharing variables we enforce the same relative ordering for
                 occurrences of the same non-terminal.
-        \begin{figure}
+    \end{itemize}
+    \begin{figure}
+        \begin{subfigure}{0.65\textwidth}
             \begin{tikzpicture}
 \agbeginprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
 \agparent{0}{Bin}{lhs}{9.866666666666667}{lhs:Tree} %
@@ -464,25 +449,43 @@
 \agvarlinedowndown{0}{rIlab}{rSlab}{1}{}{}{1}
 }
 \only<2>{
+\agvarlinedowndown{0}{lhsIlab}{lhsSvals}{1}{}{}{1}
+\agvarlinedowndown{0}{lIlab}{lSvals}{1}{}{}{1}
+\agvarlinedowndown{0}{rIlab}{rSvals}{1}{}{}{1}
+}
+\only<3>{
 \agvarlinedowndown{0}{lhsIvals}{lhsSlab}{1}{}{}{1}
 \agvarlinedowndown{0}{lIvals}{lSlab}{1}{}{}{1}
 \agvarlinedowndown{0}{rIvals}{rSlab}{1}{}{}{1}
 }
-\only<3>{
+\only<4>{
 \agvarlinedowndown{0}{lhsIvals}{lhsSvals}{1}{}{}{1}
 \agvarlinedowndown{0}{lIvals}{lSvals}{1}{}{}{1}
 \agvarlinedowndown{0}{rIvals}{rSvals}{1}{}{}{1}
 }
 \agendprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
             \end{tikzpicture}
-        \end{figure}
-%        \item Formulation:
-%        \begin{itemize}
-%            \item Which undirected edges to add to which graphs?
-%            \item How can constraints express cycle-freeness?
-%        \end{itemize}
-%        \item A satisfying assignment yields an orientation.
-    \end{itemize}
+        \end{subfigure}
+        \begin{subfigure}{0.3\textwidth}
+            \begin{tikzpicture}
+\agbeginprod{0}{Leaf}{lhs}{Tree}{10.2} %
+\agparent{0}{Leaf}{lhs}{5.1}{lhs:Tree} %
+\agparattr{0}{a1}{lhsIlab}{0.5}{Int}{inputstyle} %
+\agparattr{0}{a2}{lhsIvals}{2.3}{[Int]}{inputstyle} %
+\agparattr{0}{a3}{lhsSlab}{7.8999999999999995}{Int}{outputstyle} %
+\agparattr{0}{a4}{lhsSvals}{9.7}{[Int]}{outputstyle} %
+\agsibline{0}{lhsIlab}{lhsIvals} %
+\agsibline{0}{lhsIvals}{lhs} %
+\agsibline{0}{lhs}{lhsSlab} %
+\agsibline{0}{lhsSlab}{lhsSvals} %
+\agendprod{0}{Leaf}{lhs}{Tree}{10.2} %            
+\only<1>{\agvarlinedowndown{0}{lhsIlab}{lhsSlab}{1}{}{}{1}}
+\only<2>{\agvarlinedowndown{0}{lhsIlab}{lhsSvals}{1}{}{}{1}}
+\only<3>{\agvarlinedowndown{0}{lhsIvals}{lhsSlab}{1}{}{}{1}}
+\only<4>{\agvarlinedowndown{0}{lhsIvals}{lhsSvals}{1}{}{}{1}}
+            \end{tikzpicture}
+        \end{subfigure}
+      \end{figure}
 \end{frame}
 
 \begin{frame}
@@ -501,16 +504,15 @@
     \begin{itemize}
         \item Less constraints are required when we:
         \begin{enumerate}
-            \item Observe not all possible undirected edges have to be considered.
-            \item Constrain non-terminal subgraphs separately.
             \item Triangulate the graphs,\\
                     adding constraints to encountered triangles\\
                     and removing vertices with a safe neighbourhood.
             \begin{itemize}
-                \item Results in a smaller number of transitivity constraints.
                 \item Based on work by Bryant \& Velev on equality logic.
             \end{itemize}
             \item Improving the heuristic for triangulating the graphs.
+            \item Observe not all possible undirected edges have to be considered.
+            \item Constrain non-terminal subgraphs separately.
         \end{enumerate}
         \item In a triangulated graph every cycle has length 3 or has a chord.
     \end{itemize}
@@ -536,6 +538,20 @@
         \draw[style=chord] (n) -- node[anchor=west]  {\only<2,3,4>{$\uparrow$}} (s);
         \end{tikzpicture}
     \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Triangulation}
+    \begin{itemize}
+        \item A graph is triangulated by selecting \emph{some} vertex $v$,
+            \\and adding a chord for all pairs of unconnected neighbours.
+        \item We add 2 clauses for every encountered triangle, \\
+                one for the clockwise and one for the counter-clockwise cycle.
+        \item After all neighbours are connected, $v$ is removed.
+        \item Based on the notion of a \emph{perfect elimination order}.
+        \item The order in which vertices are removed influences the number constraints and variables.
+        \item And has a considerable impact on the time required to generate the SAT-instance.
+    \end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -580,23 +596,60 @@
 \end{frame}
 
 \begin{frame}
-    \frametitle{Triangulation}
+    \frametitle{Experimental results}
+    \begin{tabular}{l || c || r || r || r || r}
+                 &   K\&W & LOAG-b & LOAG-SAT\\
+      \hline
+      UHC MainAG          & 33s   & 13s   & 9s    \\
+      Asil Test              & 1.8s  & 4.4s  & 3.4s  \\
+      Asil ByteCode         & 0.6s  & 29.4s & 2.8s  \\
+      Asil PrettyTree         & 390ms & 536ms & 585ms \\
+      Asil InsertLabels       & 314ms & 440ms & 452ms \\
+      UUAGC CodeGeneration&  348ms & 580ms & 382ms \\
+      Pigeonhole principle        & 107ms & 1970ms& 191ms \\ 
+    \end{tabular}
+\end{frame}
+
+\begin{frame}
+\frametitle{Schedule optimisations}
+\begin{itemize}
+    \item Encoding LOAG as SAT allows us to define arbitrary scheduling optimisations.
+    \item For example:
+        \begin{itemize}
+            \item Reducing overhead from performing \emph{visits}.
+            \item Demanding certain attributes to be evaluated ASAP.
+        \end{itemize}
+    \item Instead of specifying the demands up front, we interact with the SAT-solver.
+    \item Based on the ideas of \emph{sorting networks}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conclusion}
     \begin{itemize}
-        \item A graph is triangulated by selecting \emph{some} vertex $v$,
-            \\and adding a chord for all pairs of unconnected neighbours.
-        \item We add 2 clauses for every encountered triangle, \\
-                one for the clockwise and one for the counter-clockwise cycle.
-        \item After all neighbours are connected, $v$ is removed.
-        \item Based on the notion of a \emph{perfect elimination order}.
-        \item The order in which vertices are removed influences the number constraints and variables.
-        \item And has a considerable impact on the time required to generate the SAT-instance.
-    \end{itemize}
-\end{frame}\begin{frame}
-    \frametitle{}
-    \begin{itemize}
-        \item
+        \item The LOAG scheduling problem is an instance of SAT.
+        \item The problem is quite general:
+            \begin{itemize}
+                \item Find a linear order on a number of graphs.
+                \item Where some pairs need to have the same `assignment'.
+            \end{itemize}
+        \item Generating the SAT-instance takes up most of the work.
+        \item We decreased the amount of work, by:
+        \begin{itemize}
+            \item Adding constraints for triangles in a triangulated graph.
+            \item Selecting the right heuristic for triangulating the graph.
+            \item A number of domain specific improvements.
+        \end{itemize}
     \end{itemize}
 \end{frame}
 
 
 \end{document}
+\begin{frame}
+\frametitle{}
+\begin{itemize}
+    \item
+\end{itemize}
+\end{frame}
+
+
