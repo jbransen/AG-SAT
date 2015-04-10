@@ -9,8 +9,8 @@
 
 \input{../paper/formats.tex}
 
-\title{Linearly Ordered Attribute Grammar scheduling using SAT-solving}
-\author[shortname]{Jeroen Bransen \inst{1} \and 
+\title[Scheduling LOAGs with SAT]{Linearly Ordered Attribute Grammar scheduling using SAT-solving}
+\author[L. Thomas van Binsbergen]{Jeroen Bransen \inst{1} \and 
                   \underline{L. Thomas van Binsbergen} \inst{2} \and\\ 
                    Atze Dijkstra \inst{1} \and 
                     Koen Claessen \inst{3}}
@@ -27,14 +27,30 @@
 \end{frame}
 
 \begin{frame}
+    \frametitle{Overview}
+    \begin{itemize}
+        \item Motivation.
+        \item LOAG scheduling problem.
+        \item SAT formulation.
+        \item Constraint generation using chordal graphs.
+        \begin{itemize}
+                \item Based on an approach by Bryant \& Velev.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
     \frametitle{Attribute Grammars}
     \begin{itemize}
         \item Attribute Grammars describe computations over trees.
         \item Useful in compiler construction, e.g. for:\\
                 Code generation, static analysis, semantic evaluation.
         \item An AG compiler generates an evaluator from a description.
-        \item To generate a \emph{strict} evaluator scheduling is required.
-        \item This scheduling problem is NP-hard.
+        \begin{itemize}
+            \item UUAGC (Utrecht University Attribute Grammar Compiler).
+        \end{itemize}
+        \item To generate a \emph{strict} evaluator, scheduling is required.
+        \item The scheduling problem is NP-hard.
     \end{itemize}
 \end{frame}
 
@@ -71,32 +87,6 @@
     \end{itemize}
 \end{frame}
 
-\begin{frame}
-    \frametitle{Scheduling the Utrecht Haskell Compiler (UHC)}
-    \begin{itemize}
-        \item UHC is partly generated from of a large number of AGs.
-        \item The ``main AG'' is large indeed:
-         \begin{itemize}
-            \item 30 non-terminals
-            \item 134 productions
-            \item 1332 attributes (44.4 per non-terminal!)
-            \item 9766 dependencies
-         \end{itemize} 
-        \item Kastens' algorithm does not find a static evaluation order for the main AG.
-        \item We know at least one exists, as Kastens' algorithm can be `helped' to find one
-                using 24 \emph{augmenting dependencies}.
-    \end{itemize}
-\end{frame}
-
-\begin{frame}
-    \frametitle{Overview}
-    \begin{itemize}
-        \item LOAG scheduling problem.
-        \item SAT formulation.
-        \item Constraint generation using chordal graphs.
-    \end{itemize}
-\end{frame}
-
 \section{LOAG scheduling problem}
 \begin{frame}
     \frametitle{AG descriptions}
@@ -107,48 +97,41 @@
             \item A set of attribute declarations (for every non-terminal).
             \item A definition for every attribute (in each context it appears).
         \end{enumerate}
-        \item From the AG description, the AG compiler obtains:
-        \begin{enumerate}
-            \item A dependency graph for every:
-                \begin{itemize} 
-                    \item Non-terminal
-                    \item Production
-                \end{itemize}
-        \end{enumerate}
+        \item From the AG description, the AG compiler obtains a dependency 
+                graph for every production.
     \end{itemize}
 \end{frame}
 
-\begin{frame}
-    \frametitle{Non-terminal dependency graphs}
-    \begin{itemize}
-        \item The non-terminal dependency graph for $X$ contains:
-            \begin{itemize}
-                \item The non-terminal $X$ 
-                \item All attributes of $X$ as vertices.
-            \end{itemize}
-    \end{itemize}
-    \begin{figure}
-        \begin{tikzpicture}
-
-\agbeginprod{0}{Tree}{lhs}{Tree}{10.2} %
-\agparent{0}{Tree}{lhs}{5.1}{} %
-\agparattr{0}{a1}{lhsIlab}{0.5}{Int}{outputstyle} %
-\agparattr{0}{a2}{lhsIvals}{2.3}{[Int]}{outputstyle} %
-\agparattr{0}{a3}{lhsSlab}{7.8999999999999995}{Int}{outputstyle} %
-\agparattr{0}{a4}{lhsSvals}{9.7}{[Int]}{outputstyle} %
-\agsibline{0}{lhsIlab}{lhsIvals} %
-\agsibline{0}{lhsIvals}{lhs} %
-\agsibline{0}{lhs}{lhsSlab} %
-\agsibline{0}{lhsSlab}{lhsSvals} %
-        \end{tikzpicture}
-    \caption{Non-terminal Tree for representing binary trees.}
-    \end{figure}
-\end{frame}
+%\begin{frame}
+%    \frametitle{Non-terminal dependency graphs}
+%    \begin{itemize}
+%        \item The non-terminal dependency graph for $X$ contains:
+%            \begin{itemize}
+%                \item The non-terminal $X$ 
+%                \item All attributes of $X$ as vertices.
+%            \end{itemize}
+%    \end{itemize}
+%    \begin{figure}
+%        \begin{tikzpicture}
+%
+%\agbeginprod{0}{Tree}{lhs}{Tree}{10.2} %
+%\agparent{0}{Tree}{lhs}{5.1}{} %
+%\agparattr{0}{a1}{lhsIlab}{0.5}{Int}{outputstyle} %
+%\agparattr{0}{a2}{lhsIvals}{2.3}{[Int]}{outputstyle} %
+%\agparattr{0}{a3}{lhsSlab}{7.8999999999999995}{Int}{outputstyle} %
+%\agparattr{0}{a4}{lhsSvals}{9.7}{[Int]}{outputstyle} %
+%\agsibline{0}{lhsIlab}{lhsIvals} %
+%\agsibline{0}{lhsIvals}{lhs} %
+%\agsibline{0}{lhs}{lhsSlab} %
+%\agsibline{0}{lhsSlab}{lhsSvals} %
+%        \end{tikzpicture}
+%    \caption{Non-terminal Tree for representing binary trees.}
+%    \end{figure}
+%\end{frame}
 
 \begin{frame}
     \frametitle{Production dependency graph}
     \begin{itemize}
-        \only<1,2>{
         \item A production graph contains:
             \begin{itemize} 
                 \item A parent node for the production's left-hand side ($\mathit{lhs}$). 
@@ -157,26 +140,8 @@
             \end{itemize}
         \item The children are named by the programmer ($l$ and $r$ for Bin).
         \item The vertices are also called \emph{attribute occurrences}. 
-        }
     \end{itemize}
-    \only<2>{
-    \begin{figure}
-        \begin{tikzpicture}
-\agbeginprod{0}{Leaf}{lhs}{Tree}{10.2} %
-\agparent{0}{Leaf}{lhs}{5.1}{lhs:Tree} %
-\agparattr{0}{a1}{lhsIlab}{0.5}{Int}{inputstyle} %
-\agparattr{0}{a2}{lhsIvals}{2.3}{[Int]}{inputstyle} %
-\agparattr{0}{a3}{lhsSlab}{7.8999999999999995}{Int}{outputstyle} %
-\agparattr{0}{a4}{lhsSvals}{9.7}{[Int]}{outputstyle} %
-\agsibline{0}{lhsIlab}{lhsIvals} %
-\agsibline{0}{lhsIvals}{lhs} %
-\agsibline{0}{lhs}{lhsSlab} %
-\agsibline{0}{lhsSlab}{lhsSvals} %
-\agendprod{0}{Leaf}{lhs}{Tree}{10.2} %
-            \end{tikzpicture}
-    \end{figure}
-    }
-    \only<1>{
+    \begin{minipage}[T]{0.6\textwidth}
     \begin{figure}
         \begin{tikzpicture}
 \agbeginprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
@@ -210,71 +175,8 @@
 \agendprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
         \end{tikzpicture}
     \end{figure}
-    }
-\end{frame}
-
-\begin{frame}
-    \frametitle{Direct dependencies}
-    \begin{itemize}
-        \item From the AG description \emph{direct dependencies} are obtained.
-        \item If attribute $a$ is used in the definition of $b$, then $a\rightarrow b$.
-    \end{itemize}
-    \begin{figure}
-        \begin{tikzpicture}
-\agbeginprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
-\agparent{0}{Bin}{lhs}{9.866666666666667}{lhs:Tree} %
-\agparattr{0}{a1}{lhsIlab}{5.433333333333334}{Int}{inputstyle} %
-\agparattr{0}{a2}{lhsIvals}{7.233333333333333}{[Int]}{inputstyle} %
-\agparattr{0}{a3}{lhsSlab}{12.5}{Int}{outputstyle} %
-\agparattr{0}{a4}{lhsSvals}{14.3}{[Int]}{outputstyle} %
-\agchldnonterm{0}{l}{l}{4.433333333333334}{Tree} %
-\agchldattr{0}{a1}{lIlab}{0.5}{Int}{outputstyle} %
-\agchldattr{0}{a2}{lIvals}{2.3}{[Int]}{outputstyle} %
-\agchldattr{0}{a3}{lSlab}{6.566666666666667}{Int}{inputstyle} %
-\agchldattr{0}{a4}{lSvals}{8.366666666666667}{[Int]}{inputstyle} %
-\agsibline{0}{lIlab}{lIvals} %
-\agsibline{0}{lIvals}{l} %
-\agsibline{0}{l}{lSlab} %
-\agsibline{0}{lSlab}{lSvals} %
-\agchldnonterm{0}{r}{r}{15.3}{Tree} %
-\agchldattr{0}{a1}{rIlab}{11.366666666666667}{Int}{outputstyle} %
-\agchldattr{0}{a2}{rIvals}{13.166666666666668}{[Int]}{outputstyle} %
-\agchldattr{0}{a3}{rSlab}{17.433333333333334}{Int}{inputstyle} %
-\agchldattr{0}{a4}{rSvals}{19.233333333333334}{[Int]}{inputstyle} %
-\agsibline{0}{rIlab}{rIvals} %
-\agsibline{0}{rIvals}{r} %
-\agsibline{0}{r}{rSlab} %
-\agsibline{0}{rSlab}{rSvals} %
-\agsibline{0}{lhsIlab}{lhsIvals} %
-\agsibline{0}{lhsIvals}{lhs} %
-\agsibline{0}{lhs}{lhsSlab} %
-\agsibline{0}{lhsSlab}{lhsSvals} %
-\agdeplinedownup{0}{lhsIlab}{lIlab}{horunknown} %
-\agdeplinedownup{0}{lhsIlab}{rIlab}{horunknown} %
-\agdeplinedownup{0}{lhsIvals}{rIvals}{horunknown} %
-\agdeplineupupctrl{0}{lSlab}{rIlab}{horleftright}{0.7} %
-\agdeplineupupctrl{0}{rSvals}{lIvals}{horrightleft}{0.8} %
-\agdeplineupdown{0}{rSlab}{lhsSlab}{horunknown} %
-\agdeplineupdown{0}{lSvals}{lhsSvals}{horunknown} %
-\agendprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %    
-        \end{tikzpicture}
-    \end{figure}
-\end{frame}
-
-
-\begin{frame}
-    \frametitle{LOAG scheduling}
-    \only<1-3>{
-    \begin{itemize}
-        \item Find a linear order for every production graph, such that:
-            \begin{itemize}
-                \only<1>{\item[1)] The direct dependencies are `respected'.}
-                \only<2,3>{\item[2)] The relative ordering for all occurrences of the same non-terminal are equal.}
-                \only<2,3>{\item[] For example, $a3 < a2$ at $r$ $\Rightarrow$ $a3 < a2$ at $l$ and $\mathit{lhs}$, \\ but also at occurrences of Tree in other production graphs.}
-            \end{itemize}
-    \end{itemize}
-    }
-    \only<4-5>{
+    \end{minipage}
+    \begin{minipage}[T]{0.35\textwidth}
     \begin{figure}
         \begin{tikzpicture}
 \agbeginprod{0}{Leaf}{lhs}{Tree}{10.2} %
@@ -287,24 +189,19 @@
 \agsibline{0}{lhsIvals}{lhs} %
 \agsibline{0}{lhs}{lhsSlab} %
 \agsibline{0}{lhsSlab}{lhsSvals} %
-\agdeplinedowndown{0}{lhsIlab}{lhsSlab}{horunknown} %
-\agdeplinedowndown{0}{lhsIvals}{lhsSvals}{horunknown} %
-\agendprod{0}{Leaf}{lhs}{Tree}{10.2} %            
-        \only<4>{
-        \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{red}{1}}};
-        \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{red}{2}}};
-        \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{red}{3}}};
-        \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{red}{4}}};
-        }
-        \only<5>{
-        \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{blue}{1}}};
-        \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{blue}{3}}};
-        \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{blue}{2}}};
-        \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{blue}{4}}};
-        }
-        \end{tikzpicture}
+\agendprod{0}{Leaf}{lhs}{Tree}{10.2} %
+            \end{tikzpicture}
     \end{figure}
-    }
+    \end{minipage}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Direct dependencies}
+    \begin{itemize}
+        \item From the AG description \emph{direct dependencies} are obtained.
+        \item If attribute $a$ is used in the definition of $b$, then $a\rightarrow b$.
+    \end{itemize}
+    \begin{minipage}[T]{0.6\textwidth}
     \begin{figure}
         \begin{tikzpicture}
 \agbeginprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
@@ -336,71 +233,180 @@
 \agsibline{0}{lhs}{lhsSlab} %
 \agsibline{0}{lhsSlab}{lhsSvals} %
 \agdeplinedownup{0}{lhsIlab}{lIlab}{horunknown} %
-\agdeplinedownup{0}{lhsIlab}{rIlab}{horunknown} %
 \agdeplinedownup{0}{lhsIvals}{rIvals}{horunknown} %
 \agdeplineupupctrl{0}{lSlab}{rIlab}{horleftright}{0.7} %
 \agdeplineupupctrl{0}{rSvals}{lIvals}{horrightleft}{0.8} %
 \agdeplineupdown{0}{rSlab}{lhsSlab}{horunknown} %
 \agdeplineupdown{0}{lSvals}{lhsSvals}{horunknown} %
 \agendprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %    
-
-        \only<1>{
-        \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{red}{1}}};
-        \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{red}{2}}};
-        \node[below=0mm of lIlab] {\scriptsize{\textcolor{red}{3}}};
-        \node[below=0mm of lIvals] {\scriptsize{\textcolor{red}{4}}};
-        \node[below=0mm of lSlab] {\scriptsize{\textcolor{red}{5}}};
-        \node[below=0mm of lSvals] {\scriptsize{\textcolor{red}{6}}};
-        \node[below=0mm of rIlab] {\scriptsize{\textcolor{red}{7}}};
-        \node[below=0mm of rIvals] {\scriptsize{\textcolor{red}{8}}};
-        \node[below=0mm of rSlab] {\scriptsize{\textcolor{red}{9}}};
-        \node[below=0mm of rSvals] {\scriptsize{\textcolor{red}{10}}};
-        \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{red}{11}}};
-        \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{red}{12}}};
-        }
-        \only<2>{
-        \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{red}{1}}};
-        \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{red}{2}}};
-        \node[below=0mm of lIlab] {\scriptsize{\textcolor{red}{3}}};
-        \node[below=0mm of lIvals] {\scriptsize{\textcolor{red}{9}}};
-        \node[below=0mm of lSlab] {\scriptsize{\textcolor{red}{4}}};
-        \node[below=0mm of lSvals] {\scriptsize{\textcolor{red}{10}}};
-        \node[below=0mm of rIlab] {\scriptsize{\textcolor{red}{5}}};
-        \node[below=0mm of rIvals] {\scriptsize{\textcolor{red}{7}}};
-        \node[below=0mm of rSlab] {\scriptsize{\textcolor{red}{6}}};
-        \node[below=0mm of rSvals] {\scriptsize{\textcolor{red}{8}}};
-        \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{red}{11}}};
-        \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{red}{12}}};
-        }
-        \only<3-5>{
-        \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{blue}{1}}};
-        \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{blue}{7}}};
-        \node[below=0mm of lIlab] {\scriptsize{\textcolor{blue}{2}}};
-        \node[below=0mm of lIvals] {\scriptsize{\textcolor{blue}{10}}};
-        \node[below=0mm of lSlab] {\scriptsize{\textcolor{blue}{3}}};
-        \node[below=0mm of lSvals] {\scriptsize{\textcolor{blue}{11}}};
-        \node[below=0mm of rIlab] {\scriptsize{\textcolor{blue}{4}}};
-        \node[below=0mm of rIvals] {\scriptsize{\textcolor{blue}{8}}};
-        \node[below=0mm of rSlab] {\scriptsize{\textcolor{blue}{5}}};
-        \node[below=0mm of rSvals] {\scriptsize{\textcolor{blue}{9}}};
-        \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{blue}{6}}};
-        \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{blue}{12}}};
-        }
-         \end{tikzpicture}
-        \only<1>{
-        \caption{Invalid schedule: $10 < 4$.}
-        }\only<2>{
-        \caption{Invalid schedule: $\mathit{lhs}$ has different order.}
-        }\only<3>{
-        \caption{No unsatisfied properties in Bin.}
-        }\only<4>{
-        \caption{Invalid schedule: Leaf.$\mathit{lhs}$ has a different order.}
-        }\only<5>{
-        \caption{Valid schedule.}
-        }
-        
-        
+        \end{tikzpicture}
     \end{figure}
+    \end{minipage}
+    \begin{minipage}[T]{0.35\textwidth}
+        \begin{figure}\begin{tikzpicture}
+        \agbeginprod{0}{Leaf}{lhs}{Tree}{10.2} %
+        \agparent{0}{Leaf}{lhs}{5.1}{lhs:Tree} %
+        \agparattr{0}{a1}{lhsIlab}{0.5}{Int}{inputstyle} %
+        \agparattr{0}{a2}{lhsIvals}{2.3}{[Int]}{inputstyle} %
+        \agparattr{0}{a3}{lhsSlab}{7.8999999999999995}{Int}{outputstyle} %
+        \agparattr{0}{a4}{lhsSvals}{9.7}{[Int]}{outputstyle} %
+        \agsibline{0}{lhsIlab}{lhsIvals} %
+        \agsibline{0}{lhsIvals}{lhs} %
+        \agsibline{0}{lhs}{lhsSlab} %
+        \agsibline{0}{lhsSlab}{lhsSvals} %
+        \agdeplinedowndown{0}{lhsIlab}{lhsSlab}{horunknown} %
+        \agdeplinedowndown{0}{lhsIvals}{lhsSvals}{horunknown} %
+        \end{tikzpicture}\end{figure} 
+    \end{minipage}
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{LOAG scheduling}
+    \begin{itemize}
+        \item Find a linear order for every production graph, such that:
+            \begin{itemize}
+                \item[1)] The direct dependencies are `respected' (local).
+                \item[2)] Same relative ordering for non-terminal occurrences (global):\
+                \begin{itemize}
+                    \item[] If $a3 < a2$ holds for $a3$ and $a2$ attached to the same\\
+                        $\;\;$ occurrence of non-terminal $X$,\\ 
+                        then $a3 < a2$ at all occurrences of $X$.
+                \end{itemize}
+            \end{itemize}
+    \end{itemize}
+    \begin{minipage}[T]{0.6\textwidth}
+    \begin{figure}
+        \begin{tikzpicture}
+            \agbeginprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %
+            \agparent{0}{Bin}{lhs}{9.866666666666667}{lhs:Tree} %
+            \agparattr{0}{a1}{lhsIlab}{5.433333333333334}{Int}{inputstyle} %
+            \agparattr{0}{a2}{lhsIvals}{7.233333333333333}{[Int]}{inputstyle} %
+            \agparattr{0}{a3}{lhsSlab}{12.5}{Int}{outputstyle} %
+            \agparattr{0}{a4}{lhsSvals}{14.3}{[Int]}{outputstyle} %
+            \agchldnonterm{0}{l}{l}{4.433333333333334}{Tree} %
+            \agchldattr{0}{a1}{lIlab}{0.5}{Int}{outputstyle} %
+            \agchldattr{0}{a2}{lIvals}{2.3}{[Int]}{outputstyle} %
+            \agchldattr{0}{a3}{lSlab}{6.566666666666667}{Int}{inputstyle} %
+            \agchldattr{0}{a4}{lSvals}{8.366666666666667}{[Int]}{inputstyle} %
+            \agsibline{0}{lIlab}{lIvals} %
+            \agsibline{0}{lIvals}{l} %
+            \agsibline{0}{l}{lSlab} %
+            \agsibline{0}{lSlab}{lSvals} %
+            \agchldnonterm{0}{r}{r}{15.3}{Tree} %
+            \agchldattr{0}{a1}{rIlab}{11.366666666666667}{Int}{outputstyle} %
+            \agchldattr{0}{a2}{rIvals}{13.166666666666668}{[Int]}{outputstyle} %
+            \agchldattr{0}{a3}{rSlab}{17.433333333333334}{Int}{inputstyle} %
+            \agchldattr{0}{a4}{rSvals}{19.233333333333334}{[Int]}{inputstyle} %
+            \agsibline{0}{rIlab}{rIvals} %
+            \agsibline{0}{rIvals}{r} %
+            \agsibline{0}{r}{rSlab} %
+            \agsibline{0}{rSlab}{rSvals} %
+            \agsibline{0}{lhsIlab}{lhsIvals} %
+            \agsibline{0}{lhsIvals}{lhs} %
+            \agsibline{0}{lhs}{lhsSlab} %
+            \agsibline{0}{lhsSlab}{lhsSvals} %
+            \agdeplinedownup{0}{lhsIlab}{lIlab}{horunknown} %
+            \agdeplinedownup{0}{lhsIvals}{rIvals}{horunknown} %
+            \agdeplineupupctrl{0}{lSlab}{rIlab}{horleftright}{0.7} %
+            \agdeplineupupctrl{0}{rSvals}{lIvals}{horrightleft}{0.8} %
+            \agdeplineupdown{0}{rSlab}{lhsSlab}{horunknown} %
+            \agdeplineupdown{0}{lSvals}{lhsSvals}{horunknown} %
+            \agendprod{0}{Bin}{lhs}{Tree}{19.733333333333334} %    
+
+            \only<1>{
+            \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{red}{1}}};
+            \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{red}{2}}};
+            \node[below=0mm of lIlab] {\scriptsize{\textcolor{red}{3}}};
+            \node[below=0mm of lIvals] {\scriptsize{\textcolor{red}{4}}};
+            \node[below=0mm of lSlab] {\scriptsize{\textcolor{red}{5}}};
+            \node[below=0mm of lSvals] {\scriptsize{\textcolor{red}{6}}};
+            \node[below=0mm of rIlab] {\scriptsize{\textcolor{red}{7}}};
+            \node[below=0mm of rIvals] {\scriptsize{\textcolor{red}{8}}};
+            \node[below=0mm of rSlab] {\scriptsize{\textcolor{red}{9}}};
+            \node[below=0mm of rSvals] {\scriptsize{\textcolor{red}{10}}};
+            \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{red}{11}}};
+            \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{red}{12}}};
+            }
+            \only<2>{
+            \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{red}{1}}};
+            \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{red}{2}}};
+            \node[below=0mm of lIlab] {\scriptsize{\textcolor{red}{3}}};
+            \node[below=0mm of lIvals] {\scriptsize{\textcolor{red}{9}}};
+            \node[below=0mm of lSlab] {\scriptsize{\textcolor{red}{4}}};
+            \node[below=0mm of lSvals] {\scriptsize{\textcolor{red}{10}}};
+            \node[below=0mm of rIlab] {\scriptsize{\textcolor{red}{5}}};
+            \node[below=0mm of rIvals] {\scriptsize{\textcolor{red}{7}}};
+            \node[below=0mm of rSlab] {\scriptsize{\textcolor{red}{6}}};
+            \node[below=0mm of rSvals] {\scriptsize{\textcolor{red}{8}}};
+            \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{red}{11}}};
+            \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{red}{12}}};
+            }
+            \only<3-4>{
+            \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{blue}{1}}};
+            \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{blue}{7}}};
+            \node[below=0mm of lIlab] {\scriptsize{\textcolor{blue}{2}}};
+            \node[below=0mm of lIvals] {\scriptsize{\textcolor{blue}{10}}};
+            \node[below=0mm of lSlab] {\scriptsize{\textcolor{blue}{3}}};
+            \node[below=0mm of lSvals] {\scriptsize{\textcolor{blue}{11}}};
+            \node[below=0mm of rIlab] {\scriptsize{\textcolor{blue}{4}}};
+            \node[below=0mm of rIvals] {\scriptsize{\textcolor{blue}{8}}};
+            \node[below=0mm of rSlab] {\scriptsize{\textcolor{blue}{5}}};
+            \node[below=0mm of rSvals] {\scriptsize{\textcolor{blue}{9}}};
+            \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{blue}{6}}};
+            \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{blue}{12}}};
+            }
+        \end{tikzpicture}
+    \end{figure}
+    \end{minipage}
+    \begin{minipage}[T]{0.35\textwidth}
+        \begin{figure}
+        \begin{tikzpicture}
+            \agbeginprod{0}{Leaf}{lhs}{Tree}{10.2} %
+            \agparent{0}{Leaf}{lhs}{5.1}{lhs:Tree} %
+            \agparattr{0}{a1}{lhsIlab}{0.5}{Int}{inputstyle} %
+            \agparattr{0}{a2}{lhsIvals}{2.3}{[Int]}{inputstyle} %
+            \agparattr{0}{a3}{lhsSlab}{7.8999999999999995}{Int}{outputstyle} %
+            \agparattr{0}{a4}{lhsSvals}{9.7}{[Int]}{outputstyle} %
+            \agsibline{0}{lhsIlab}{lhsIvals} %
+            \agsibline{0}{lhsIvals}{lhs} %
+            \agsibline{0}{lhs}{lhsSlab} %
+            \agsibline{0}{lhsSlab}{lhsSvals} %
+            \agdeplinedowndown{0}{lhsIlab}{lhsSlab}{horunknown} %
+            \agdeplinedowndown{0}{lhsIvals}{lhsSvals}{horunknown} %
+            \agendprod{0}{Leaf}{lhs}{Tree}{10.2} %            
+            \only<1-3>{
+            \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{red}{1}}};
+            \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{red}{2}}};
+            \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{red}{3}}};
+            \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{red}{4}}};
+            }
+            \only<4>{
+            \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{blue}{1}}};
+            \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{blue}{3}}};
+            \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{blue}{2}}};
+            \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{blue}{4}}};
+            }
+        \end{tikzpicture}
+        \end{figure} 
+    \end{minipage}
+        \only<1>{
+        \begin{itemize}
+            \item Invalid schedule: $10 < 4$.
+        \end{itemize}
+        }\only<2>{
+        \begin{itemize}
+            \item Invalid schedule: $\mathit{lhs}$ has different order.
+        \end{itemize}
+        }\only<3>{
+        \begin{itemize}
+            \item No unsatisfied properties in Bin. $\mathit{lhs}$ at Leaf still incorrect.
+        \end{itemize}
+        }\only<4>{
+        \begin{itemize}
+            \item Valid schedule.
+        \end{itemize}
+        }        
 \end{frame}
 
 \section{SAT formulation}
@@ -492,10 +498,11 @@
     \frametitle{First attempt}
     \begin{itemize}
         \item Add every possible undirected edge to every production graph.
-        \item Fix the assignment for edges corresponding to direct dependencies.
+        \item Assign a variable to every undirected edge, \\
+                where variables are shared as explained earlier.
+        \item Add constraints corresponding to the direct dependencies.
         \item Add transitivity constraints.
-        \item Problem: Number of constraints is cubic to the number of attribute occurrences.
-        \item Generating SAT-instance takes too long.
+        \item Number of constraints is cubic to the number of attribute occurrences.
     \end{itemize}
 \end{frame}
 
@@ -505,7 +512,7 @@
         \item Less constraints are required when we:
         \begin{enumerate}
             \item Triangulate the graphs,\\
-                    adding constraints to encountered triangles\\
+                    adding 2 constraints for all encountered triangles\\
                     and removing vertices with a safe neighbourhood.
             \begin{itemize}
                 \item Based on work by Bryant \& Velev on equality logic.
@@ -514,7 +521,6 @@
             \item Observe not all possible undirected edges have to be considered.
             \item Constrain non-terminal subgraphs separately.
         \end{enumerate}
-        \item In a triangulated graph every cycle has length 3 or has a chord.
     \end{itemize}
 \end{frame}
 
@@ -522,7 +528,8 @@
 \begin{frame}
     \frametitle{Constraining triangles}
     \begin{itemize}
-        \item In a triangulated graph it is enough to rule out all 3-cycles.
+        \item In a triangulated graph every cycle has length 3 or has a chord.
+        \item By ruling out 3-cycles we rule out all bigger cyles.
     \end{itemize}
     \begin{figure}
         \begin{tikzpicture}
@@ -597,7 +604,7 @@
 
 \begin{frame}
     \frametitle{Experimental results}
-    \begin{tabular}{l || c || r || r || r || r}
+    \begin{tabular}{l || r || r || r}
                  &   K\&W & LOAG-b & LOAG-SAT\\
       \hline
       UHC MainAG          & 33s   & 13s   & 9s    \\
@@ -606,7 +613,8 @@
       Asil PrettyTree         & 390ms & 536ms & 585ms \\
       Asil InsertLabels       & 314ms & 440ms & 452ms \\
       UUAGC CodeGeneration&  348ms & 580ms & 382ms \\
-      Pigeonhole principle        & 107ms & 1970ms& 191ms \\ 
+      Pigeonhole principle$^+$        & 107ms & 1970ms& 191ms \\ 
+      Pigeonhole principle$^-$     & 111ms & 60.2s & 103ms
     \end{tabular}
 \end{frame}
 
@@ -643,13 +651,47 @@
     \end{itemize}
 \end{frame}
 
-
-\end{document}
 \begin{frame}
-\frametitle{}
-\begin{itemize}
-    \item
-\end{itemize}
+    \frametitle{Scheduling the Utrecht Haskell Compiler (UHC)}
+    \begin{itemize}
+        \item UHC is partly generated from of a large number of AGs.
+        \item The ``main AG'' is large indeed:
+         \begin{itemize}
+            \item 30 non-terminals
+            \item 134 productions
+            \item 1332 attributes (44.4 per non-terminal!)
+            \item 9766 dependencies
+         \end{itemize} 
+        \item Kastens' algorithm does not find a static evaluation order for the main AG.
+        \item We know at least one exists, as Kastens' algorithm can be `helped' to find one
+                using 24 \emph{augmenting dependencies}.
+    \end{itemize}
 \end{frame}
 
+\begin{frame}
+    \frametitle{Triangulation heuristic}
+    \small
+    \begin{tabular}{c r r r r}
+      Order                                   &   \#Clauses   & \#Vars       & Ratio  &Time\\
+      \hline
+      $(d,s,c)$ &  21,307,812  & \quad 374,792           & \quad 57.85 & 34s\\
+      $(d,c,s)$ &   8,301,557   & 220,690           & 37.62 & 17s \\
+      $(s,d,c)$ &  12,477,519   & 287,151           & 43.45 & 23s \\
+      $(s,c,d)$ &   8,910,379   & 241,853           & 36.84 & 18s \\
+      $(c,d,s)$ &   3,004,705   & 137,277           & 21.89 & 9s \\
+      $(c,s,d)$ &   3,359,910   & 156,795           & 21.43 & 10s \\
+      $(d+s,c)$     &  12,424,635   & 386,323           & 32.16 & 22s\\
+      $(d,s+c)$     &   8,244,600   & 219,869           & 37.50 & 17s\\
+      $(d+c,s)$     &   2,930,922   & 135,654           & 21.61 & 9s\\
+      $(s,d+c)$     &   8,574,307   & 236,348           & 36.28 & 17s\\
+      $(s+c,d)$     &   3,480,866   & 157,089           & 22.16 & 11s\\
+      $(c,d+s)$     &   3,392,930   & 157,568           & 21.53 & 11s\\
+      $(c+d+s)$     &   3,424,001   & 148,724           & 23.02 & 11s \\
+      $(3*s*(d+c)+(d*c) ^2)$     &   \underline{2,679,772}   & \underline{127,768}           & \underline{20.97} & 9s \\ \\
+    \end{tabular}
+
+\end{frame}
+
+
+\end{document}
 
