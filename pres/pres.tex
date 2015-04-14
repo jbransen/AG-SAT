@@ -332,13 +332,13 @@
             \node[above=0mm of lhsIlab] {\scriptsize{\textcolor{red}{1}}};
             \node[above=0mm of lhsIvals] {\scriptsize{\textcolor{red}{2}}};
             \node[below=0mm of lIlab] {\scriptsize{\textcolor{red}{3}}};
-            \node[below=0mm of lIvals] {\scriptsize{\textcolor{red}{9}}};
-            \node[below=0mm of lSlab] {\scriptsize{\textcolor{red}{4}}};
-            \node[below=0mm of lSvals] {\scriptsize{\textcolor{red}{10}}};
-            \node[below=0mm of rIlab] {\scriptsize{\textcolor{red}{5}}};
-            \node[below=0mm of rIvals] {\scriptsize{\textcolor{red}{7}}};
-            \node[below=0mm of rSlab] {\scriptsize{\textcolor{red}{6}}};
-            \node[below=0mm of rSvals] {\scriptsize{\textcolor{red}{8}}};
+            \node[below=0mm of lIvals] {\scriptsize{\textcolor{red}{10}}};
+            \node[below=0mm of lSlab] {\scriptsize{\textcolor{red}{5}}};
+            \node[below=0mm of lSvals] {\scriptsize{\textcolor{red}{6}}};
+            \node[below=0mm of rIlab] {\scriptsize{\textcolor{red}{7}}};
+            \node[below=0mm of rIvals] {\scriptsize{\textcolor{red}{8}}};
+            \node[below=0mm of rSlab] {\scriptsize{\textcolor{red}{9}}};
+            \node[below=0mm of rSvals] {\scriptsize{\textcolor{red}{4}}};
             \node[above=0mm of lhsSlab] {\scriptsize{\textcolor{red}{11}}};
             \node[above=0mm of lhsSvals] {\scriptsize{\textcolor{red}{12}}};
             }
@@ -511,14 +511,14 @@
     \begin{itemize}
         \item Less constraints are required when we:
         \begin{enumerate}
+            \item Observe not all possible undirected edges have to be considered.
             \item Triangulate the graphs,\\
-                    adding 2 constraints for all encountered triangles\\
+                    adding 2 clauses for all encountered triangles\\
                     and removing vertices with a safe neighbourhood.
             \begin{itemize}
                 \item Based on work by Bryant \& Velev on equality logic.
             \end{itemize}
             \item Improving the heuristic for triangulating the graphs.
-            \item Observe not all possible undirected edges have to be considered.
             \item Constrain non-terminal subgraphs separately.
         \end{enumerate}
     \end{itemize}
@@ -613,6 +613,7 @@
       Asil PrettyTree         & 390ms & 536ms & 585ms \\
       Asil InsertLabels       & 314ms & 440ms & 452ms \\
       UUAGC CodeGeneration&  348ms & 580ms & 382ms \\
+      \hline
       Pigeonhole principle$^+$        & 107ms & 1970ms& 191ms \\ 
       Pigeonhole principle$^-$     & 111ms & 60.2s & 103ms
     \end{tabular}
